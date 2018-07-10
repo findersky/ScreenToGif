@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ScreenToGif.Windows.Other;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -6,8 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Xml;
-using ScreenToGif.FileWriters;
-using ScreenToGif.Windows.Other;
 
 namespace ScreenToGif.Util
 {
@@ -36,8 +35,8 @@ namespace ScreenToGif.Util
 
             #region Selected Culture
 
-            //Search for the specified culture.     
-            string requestedCulture = $"/Resources/Localization/StringResources.{culture}.xaml";
+            //Search for the specified culture.
+            var requestedCulture = $"/Resources/Localization/StringResources.{culture}.xaml";
             var requestedResource = dictionaryList.FirstOrDefault(d => d.Source?.OriginalString == requestedCulture);
 
             #endregion
@@ -45,9 +44,9 @@ namespace ScreenToGif.Util
             #region Generic Branch Fallback
 
             //Fallback to a more generic version of the language. Example: pt-BR to pt.
-            if (requestedResource == null && culture.Length > 2 && !culture.StartsWith("en"))
+            while (requestedResource == null && !string.IsNullOrEmpty(culture))
             {
-                culture = culture.Substring(0, 2); //TODO: Support for language code like syr-SY (3 initial letters)
+                culture = CultureInfo.GetCultureInfo(culture).Parent.Name;
                 requestedCulture = $"/Resources/Localization/StringResources.{culture}.xaml";
                 requestedResource = dictionaryList.FirstOrDefault(d => d.Source?.OriginalString == requestedCulture);
             }
@@ -66,8 +65,8 @@ namespace ScreenToGif.Util
 
             #endregion
 
-            //If we have the requested resource, remove it from the list and place at the end.     
-            //Then this language will be our current string table.      
+            //If we have the requested resource, remove it from the list and place at the end.
+            //Then this language will be our current string table.
             Application.Current.Resources.MergedDictionaries.Remove(requestedResource);
             Application.Current.Resources.MergedDictionaries.Add(requestedResource);
 
@@ -87,7 +86,7 @@ namespace ScreenToGif.Util
 
             #endregion
 
-            //Inform the threads of the new culture.     
+            //Inform the threads of the new culture.
             Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
             Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
 
@@ -101,7 +100,7 @@ namespace ScreenToGif.Util
 
             try
             {
-                //Search for the specified culture.     
+                //Search for the specified culture.
                 var resourceDictionary = dictionaryList.FirstOrDefault(d => d.Source?.OriginalString == "/Resources/Localization/StringResources.en.xaml");
 
                 if (resourceDictionary == null)
@@ -119,11 +118,11 @@ namespace ScreenToGif.Util
             {
                 LogWriter.Log(ex, "Save Xaml Resource Error");
 
-                Dialog.Ok("Impossible to Save", "Impossible to save the Xaml file", ex.Message, Dialog.Icons.Warning);
+                Dialog.Ok("Impossible to Save", "Impossible to save the Xaml file", ex.Message, Icons.Warning);
             }
         }
 
-        public static bool ImportStringResource(string path)
+        public static void ImportStringResource(string path)
         {
             try
             {
@@ -132,6 +131,9 @@ namespace ScreenToGif.Util
 
                 using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
+                    if (fs.Length == 0)
+                        throw new InvalidDataException("File is empty");
+
                     //Reads the ResourceDictionary file
                     var dictionary = (ResourceDictionary)System.Windows.Markup.XamlReader.Load(fs);
                     dictionary.Source = new Uri(path);
@@ -139,16 +141,12 @@ namespace ScreenToGif.Util
                     //Add in newly loaded Resource Dictionary.
                     Application.Current.Resources.MergedDictionaries.Add(dictionary);
                 }
-
-                return true;
             }
             catch (Exception ex)
             {
-                LogWriter.Log(ex, "Import Xaml Resource Error");
-
-                Dialog.Ok("Impossible to Import", "Impossible to import the Xaml file", ex.Message, Dialog.Icons.Warning);
-
-                return false;
+                LogWriter.Log(ex, "Import Resource");
+                //Rethrowing, because it's more useful to catch later
+                throw;
             }
         }
 
@@ -202,9 +200,9 @@ namespace ScreenToGif.Util
             }
             catch (Exception ex)
             {
-                LogWriter.Log(ex, "Save Xaml Resource Error");
-
-                Dialog.Ok("Impossible to Save", "Impossible to save the Xaml file", ex.Message, Dialog.Icons.Warning);
+                LogWriter.Log(ex, "Save Resource", selectedIndex);
+                //Rethrowing, because it's more useful to catch later
+                throw;
             }
         }
 
@@ -228,6 +226,16 @@ namespace ScreenToGif.Util
                 LogWriter.Log(ex, "Remove Resource", selectedIndex);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Gets a resource as string.
+        /// </summary>
+        /// <param name="key">The key of the string resource.</param>
+        /// <returns>A string resource, usually a localized string.</returns>
+        public static string Get(string key)
+        {
+            return Application.Current.TryFindResource(key) as string;
         }
     }
 }

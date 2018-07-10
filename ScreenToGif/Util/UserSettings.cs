@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -9,9 +10,12 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Ink;
 using System.Windows.Input;
-using System.Windows.Markup;
 using System.Windows.Media;
+using System.Xaml;
 using System.Xml;
+using XamlParseException = System.Windows.Markup.XamlParseException;
+using XamlReader = System.Windows.Markup.XamlReader;
+using XamlWriter = System.Windows.Markup.XamlWriter;
 
 namespace ScreenToGif.Util
 {
@@ -129,7 +133,7 @@ namespace ScreenToGif.Util
                 return Default[key];
 
             if (Application.Current.Resources.Contains(key))
-                return Application.Current.FindResource(key);
+                return Application.Current.Resources[key];
 
             return Default[key] ?? defaultValue;
         }
@@ -140,7 +144,13 @@ namespace ScreenToGif.Util
             if (_local != null)
             {
                 if (_local.Contains(key))
+                {
                     _local[key] = value;
+
+                    //If the value is being set to null, remove it.
+                    if (value == null && (!Default.Contains(key) || Default[key] == null))
+                        _local.Remove(key);
+                }
                 else
                     _local.Add(key, value);
             }
@@ -149,7 +159,13 @@ namespace ScreenToGif.Util
             if (_appData != null)
             {
                 if (_appData.Contains(key))
+                {
                     _appData[key] = value;
+
+                    //If the value is being set to null, remove it.
+                    if (value == null && (!Default.Contains(key) || Default[key] == null))
+                        _appData.Remove(key);
+                }
                 else
                     _appData.Add(key, value);
             }
@@ -163,7 +179,7 @@ namespace ScreenToGif.Util
             All.OnPropertyChanged(key);
         }
 
-        private static ResourceDictionary LoadOrDefault(string path)
+        private static ResourceDictionary LoadOrDefault(string path, int trial = 0, XamlObjectWriterException exception = null)
         {
             ResourceDictionary resource = null;
 
@@ -172,10 +188,33 @@ namespace ScreenToGif.Util
                 if (!File.Exists(path))
                     return new ResourceDictionary();
 
+                if (exception != null)
+                {
+                    var content = File.ReadAllLines(path).ToList();
+                    content.RemoveAt(exception.LineNumber - 1);
+
+                    File.WriteAllLines(path, content);
+                }
+
                 using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
+                    try
+                    {
                         //Read in ResourceDictionary File
                         resource = (ResourceDictionary)XamlReader.Load(fs);
+                    }
+                    catch (XamlParseException xx)
+                    {
+                        if (xx.InnerException is XamlObjectWriterException inner && trial < 5)
+                            return LoadOrDefault(path, trial + 1, inner);
+
+                        resource = new ResourceDictionary();
+                    }
+                    catch (Exception ex)
+                    {
+                        //Sets a default value if null.
+                        resource = new ResourceDictionary();
+                    }
                 }
 
                 //Tries to load the resource from disk. 
@@ -227,6 +266,39 @@ namespace ScreenToGif.Util
 
         #endregion
 
+        #region Startup
+
+        public double StartupTop
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        public double StartupLeft
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        public double StartupHeight
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        public double StartupWidth
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        public WindowState StartupWindowState
+        {
+            get => (WindowState)GetValue();
+            set => SetValue(value);
+        }
+
+        #endregion
 
         #region Recorder
 
@@ -308,7 +380,7 @@ namespace ScreenToGif.Util
 
         public bool NewRecorder
         {
-            get => (bool)GetValue();
+            get => (bool)GetValue(nameof(NewRecorder), true);
             set => SetValue(value);
         }
 
@@ -317,6 +389,125 @@ namespace ScreenToGif.Util
             get => (bool)GetValue();
             set => SetValue(value);
         }
+
+        public bool ShowNotificationIcon
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool KeepOpen
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool NotifyFrameDeletion
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool NotifyProjectDiscard
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool NotifyWhileClosingEditor
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool DrawOutlineOutside
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool CheckForUpdates 
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        #endregion
+
+        #region Options • Shortcuts
+
+        public Key RecorderShortcut
+        {
+            get => (Key)GetValue(defaultValue: Key.None);
+            set => SetValue(value);
+        }
+
+        public ModifierKeys RecorderModifiers
+        {
+            get => (ModifierKeys)GetValue(defaultValue: ModifierKeys.None);
+            set => SetValue(value);
+        }
+
+        public Key WebcamRecorderShortcut
+        {
+            get => (Key)GetValue(defaultValue: Key.None);
+            set => SetValue(value);
+        }
+
+        public ModifierKeys WebcamRecorderModifiers
+        {
+            get => (ModifierKeys)GetValue(defaultValue: ModifierKeys.None);
+            set => SetValue(value);
+        }
+
+        public Key BoardRecorderShortcut
+        {
+            get => (Key)GetValue(defaultValue: Key.None);
+            set => SetValue(value);
+        }
+
+        public ModifierKeys BoardRecorderModifiers
+        {
+            get => (ModifierKeys)GetValue(defaultValue: ModifierKeys.None);
+            set => SetValue(value);
+        }
+
+        public Key EditorShortcut
+        {
+            get => (Key)GetValue(defaultValue: Key.None);
+            set => SetValue(value);
+        }
+
+        public ModifierKeys EditorModifiers
+        {
+            get => (ModifierKeys)GetValue(defaultValue: ModifierKeys.None);
+            set => SetValue(value);
+        }
+
+        public Key OptionsShortcut
+        {
+            get => (Key)GetValue(defaultValue: Key.None);
+            set => SetValue(value);
+        }
+
+        public ModifierKeys OptionsModifiers
+        {
+            get => (ModifierKeys)GetValue(defaultValue: ModifierKeys.None);
+            set => SetValue(value);
+        }
+
+        public Key ExitShortcut
+        {
+            get => (Key)GetValue(defaultValue: Key.None);
+            set => SetValue(value);
+        }
+
+        public ModifierKeys ExitModifiers
+        {
+            get => (ModifierKeys)GetValue(defaultValue: ModifierKeys.None);
+            set => SetValue(value);
+        }
+
 
         public Key StartPauseShortcut
         {
@@ -354,36 +545,120 @@ namespace ScreenToGif.Util
             set => SetValue(value);
         }
 
-        public bool NotifyFrameDeletion
+        #endregion
+
+        #region Options • Language
+
+        public string LanguageCode
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        #endregion
+
+        #region Options • Cloud
+
+        //Proxy
+        public ProxyType ProxyMode
+        {
+            get => (ProxyType)GetValue(defaultValue:ProxyType.Disabled);
+            set => SetValue(value);
+        }
+
+        public string ProxyHost
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public int ProxyPort
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public string ProxyUsername
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string ProxyPassword
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        //Imgur (Anonymous)
+        public bool ImgurAnonymousUseDirectLinks
         {
             get => (bool)GetValue();
             set => SetValue(value);
         }
 
-        public bool NotifyProjectDiscard
+        public bool ImgurAnonymousUseGifvLink
         {
             get => (bool)GetValue();
             set => SetValue(value);
         }
 
-        public bool NotifyWhileClosingEditor
+        //Imgur
+        public string ImgurOAuthToken
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string ImgurAccessToken
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string ImgurRefreshToken
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public DateTime? ImgurExpireDate
+        {
+            get => (DateTime?)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool ImgurUseDirectLinks
         {
             get => (bool)GetValue();
             set => SetValue(value);
         }
 
-        public bool DrawOutlineOutside
+        public bool ImgurUseGifvLink
         {
             get => (bool)GetValue();
             set => SetValue(value);
         }
 
-        public bool CheckForUpdates 
+        public bool ImgurUploadToAlbum
         {
             get => (bool)GetValue();
             set => SetValue(value);
         }
 
+        public string ImgurSelectedAlbum
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public ArrayList ImgurAlbumList
+        {
+            get => (ArrayList)GetValue();
+            set => SetValue(value);
+        }
+
+        //Yandex
         public string YandexDiskOAuthToken
         {
             get => (string)GetValue();
@@ -392,14 +667,7 @@ namespace ScreenToGif.Util
 
         #endregion
 
-
         #region Properties
-
-        public string LanguageCode
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
 
         public int LatestFps
         {
@@ -454,6 +722,7 @@ namespace ScreenToGif.Util
             get => (Color)GetValue();
             set => SetValue(value);
         }
+
 
         public Rect GridSize
         {
@@ -839,9 +1108,9 @@ namespace ScreenToGif.Util
             set => SetValue(value);
         }
 
-        public int LatestUploadIndex
+        public UploadService LatestUploadService
         {
-            get => (int)GetValue();
+            get => (UploadService)GetValue();
             set => SetValue(value);
         }
 
@@ -1114,6 +1383,25 @@ namespace ScreenToGif.Util
         public bool OverwriteOnSaveImages
         {
             get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        //Photoshop.
+        public string LatestPhotoshopOutputFolder
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestPhotoshopFilename
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestPhotoshopExtension
+        {
+            get => (string)GetValue();
             set => SetValue(value);
         }
 
@@ -1874,6 +2162,13 @@ namespace ScreenToGif.Util
         public string ExtraParametersGifski
         {
             get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        [Obsolete]
+        public int LatestUploadIndex
+        {
+            get => (int)GetValue();
             set => SetValue(value);
         }
 
