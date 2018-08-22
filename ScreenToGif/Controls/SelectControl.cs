@@ -246,6 +246,8 @@ namespace ScreenToGif.Controls
 
         private void SystemEvents_DisplaySettingsChanged(object o, EventArgs eventArgs)
         {
+            Scale = this.Scale();
+
             Monitors = Monitor.AllMonitorsScaled(Scale);
 
             //TODO: Adjust the selection and the UI when this happens.
@@ -809,7 +811,7 @@ namespace ScreenToGif.Controls
                     Child = new TextPath
                     {
                         IsHitTestVisible = false,
-                        Text = this.TextResource("S.Recorder.SelectArea"),
+                        Text = LocalizationHelper.Get("S.Recorder.SelectArea"),
                         Fill = new SolidColorBrush(Color.FromArgb(200, 0, 0, 0)),
                         Stroke = new SolidColorBrush(Color.FromArgb(200, 255, 255, 255)),
                         StrokeThickness = 1.6,
@@ -849,7 +851,7 @@ namespace ScreenToGif.Controls
                     Height = 40,
                     ContentHeight = 25,
                     ContentWidth = 25,
-                    ToolTip = this.TextResource("S.Recorder.CancelSelection"),
+                    ToolTip = LocalizationHelper.Get("S.Recorder.CancelSelection"),
                     Content = TryFindResource("Vector.Cancel") as Canvas,
                     Style = TryFindResource("Style.Button.NoText.White") as Style,
                     Cursor = Cursors.Arrow,
@@ -883,7 +885,7 @@ namespace ScreenToGif.Controls
                         Child = new TextPath
                         {
                             IsHitTestVisible = false,
-                            Text = "👆 " + this.TextResource("S.Recorder.SelectScreen"),
+                            Text = "👆 " + LocalizationHelper.Get("S.Recorder.SelectScreen"),
                             Fill = new SolidColorBrush(Color.FromArgb(200, 0, 0, 0)),
                             Stroke = new SolidColorBrush(Color.FromArgb(200, 255, 255, 255)),
                             StrokeThickness = 1.6,
@@ -920,7 +922,7 @@ namespace ScreenToGif.Controls
                             Child = new TextPath
                             {
                                 IsHitTestVisible = false,
-                                Text = window.Bounds.Width < 400 || window.Bounds.Height < 100 ? "👆" : "👆 " + this.TextResource("S.Recorder.SelectWindow"),
+                                Text = window.Bounds.Width < 400 || window.Bounds.Height < 100 ? "👆" : "👆 " + LocalizationHelper.Get("S.Recorder.SelectWindow"),
                                 Fill = new SolidColorBrush(Color.FromArgb(200, 0, 0, 0)),
                                 Stroke = new SolidColorBrush(Color.FromArgb(200, 255, 255, 255)),
                                 StrokeThickness = 1.6,
@@ -947,7 +949,7 @@ namespace ScreenToGif.Controls
                         Child = new TextPath
                         {
                             IsHitTestVisible = false,
-                            Text = window.Bounds.Width < 400 || window.Bounds.Height < 100 ? "👆" : "👆 " + this.TextResource("S.Recorder.SelectWindow"),
+                            Text = window.Bounds.Width < 400 || window.Bounds.Height < 100 ? "👆" : "👆 " + LocalizationHelper.Get("S.Recorder.SelectWindow"),
                             Fill = new SolidColorBrush(Color.FromArgb(200, 0, 0, 0)),
                             Stroke = new SolidColorBrush(Color.FromArgb(200, 255, 255, 255)),
                             StrokeThickness = 1.6,
@@ -1024,7 +1026,7 @@ namespace ScreenToGif.Controls
                         Child = new TextPath
                         {
                             IsHitTestVisible = false,
-                            Text = this.TextResource("S.Recorder.SelectArea"),
+                            Text = LocalizationHelper.Get("S.Recorder.SelectArea"),
                             Fill = new SolidColorBrush(Color.FromArgb(200, 0, 0, 0)),
                             Stroke = new SolidColorBrush(Color.FromArgb(200, 255, 255, 255)),
                             StrokeThickness = 1.6,
@@ -1067,7 +1069,10 @@ namespace ScreenToGif.Controls
 
             var rounded = Other.RoundUpValue(control.Scale);
 
-            if (control.Selected.IsEmpty || control.Selected.Width <= control.Scale * 2 || control.Selected.Height <= control.Scale * 2)
+            var width = Math.Round(control.Selected.Size.Width * control.Scale, MidpointRounding.AwayFromZero) - rounded * 2;
+            var height = Math.Round(control.Selected.Size.Height * control.Scale, MidpointRounding.AwayFromZero) - rounded * 2;
+
+            if (control.Selected.IsEmpty || height <= 0 || width <= 0)
             {
                 control.NonExpandedSelection = control.Selected;
                 return;
