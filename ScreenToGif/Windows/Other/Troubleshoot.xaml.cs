@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using ScreenToGif.Util;
@@ -160,8 +159,8 @@ namespace ScreenToGif.Windows.Other
 
                     if (window is RecorderNew newRecorder)
                     {
-                        top = Canvas.GetTop(newRecorder.MainBorder) - newRecorder.Top;
-                        left = Canvas.GetLeft(newRecorder.MainBorder) - newRecorder.Left;
+                        top = Canvas.GetTop(newRecorder.MainBorder) + newRecorder.Top;
+                        left = Canvas.GetLeft(newRecorder.MainBorder) + newRecorder.Left;
                         width = newRecorder.MainBorder.ActualWidth;
                         height = newRecorder.MainBorder.ActualHeight;
                         title = LocalizationHelper.Get("Recorder");
@@ -174,9 +173,9 @@ namespace ScreenToGif.Windows.Other
 
                     var rect = new Border
                     {
-                        BorderBrush = new SolidColorBrush(Colors.DarkBlue),
+                        BorderBrush = TryFindResource("Element.Border.Required") as SolidColorBrush ?? Brushes.DarkBlue,
                         BorderThickness = new Thickness(3),
-                        Background = new SolidColorBrush(Colors.WhiteSmoke),
+                        Background = TryFindResource("Panel.Background.Level3") as SolidColorBrush ?? Brushes.WhiteSmoke,
                         Width = width,
                         Height = height,
                         Tag = "C",
@@ -186,7 +185,8 @@ namespace ScreenToGif.Windows.Other
                             {
                                 VerticalAlignment = VerticalAlignment.Center,
                                 Padding = new Thickness(2),
-                                Text = title
+                                Text = title,
+                                Foreground = TryFindResource("Element.Foreground") as SolidColorBrush ?? Brushes.Black,
                             }
                         }
                     };
@@ -236,16 +236,16 @@ namespace ScreenToGif.Windows.Other
 
                 if (!UserSettings.All.SelectedRegion.IsEmpty)
                 {
-                    minLeft = Math.Min(minLeft, UserSettings.All.SelectedRegion.Left);
-                    minTop = Math.Min(minTop, UserSettings.All.SelectedRegion.Top);
-                    maxRight = Math.Max(maxRight, UserSettings.All.SelectedRegion.Right);
-                    maxBottom = Math.Max(maxBottom, UserSettings.All.SelectedRegion.Bottom);
+                    minLeft = Math.Min(minLeft, UserSettings.All.SelectedRegion.Left + SystemParameters.VirtualScreenLeft);
+                    minTop = Math.Min(minTop, UserSettings.All.SelectedRegion.Top + SystemParameters.VirtualScreenTop);
+                    maxRight = Math.Max(maxRight, UserSettings.All.SelectedRegion.Right + SystemParameters.VirtualScreenLeft);
+                    maxBottom = Math.Max(maxBottom, UserSettings.All.SelectedRegion.Bottom + SystemParameters.VirtualScreenTop);
 
                     var rect = new Border
                     {
-                        BorderBrush = new SolidColorBrush(Colors.DarkBlue),
+                        BorderBrush = TryFindResource("Element.Border.Required") as SolidColorBrush ?? Brushes.DarkBlue,
                         BorderThickness = new Thickness(3),
-                        Background = new SolidColorBrush(Colors.WhiteSmoke),
+                        Background = TryFindResource("Panel.Background.Level3") as SolidColorBrush ?? Brushes.WhiteSmoke,
                         Width = UserSettings.All.SelectedRegion.Width,
                         Height = UserSettings.All.SelectedRegion.Height,
                         Tag = "N",
@@ -255,15 +255,16 @@ namespace ScreenToGif.Windows.Other
                             {
                                 VerticalAlignment = VerticalAlignment.Center,
                                 Padding = new Thickness(2),
-                                Text = LocalizationHelper.Get("Recorder") + " 2"
+                                Text = LocalizationHelper.Get("Recorder") + " 2",
+                                Foreground = TryFindResource("Element.Foreground") as SolidColorBrush ?? Brushes.Black,
                             }
                         }
                     };
 
                     MainCanvas.Children.Add(rect);
 
-                    Canvas.SetLeft(rect, UserSettings.All.SelectedRegion.Left);
-                    Canvas.SetTop(rect, UserSettings.All.SelectedRegion.Top);
+                    Canvas.SetLeft(rect, UserSettings.All.SelectedRegion.Left + SystemParameters.VirtualScreenLeft);
+                    Canvas.SetTop(rect, UserSettings.All.SelectedRegion.Top + SystemParameters.VirtualScreenTop);
                 }
 
                 #endregion
@@ -277,9 +278,9 @@ namespace ScreenToGif.Windows.Other
 
                     var rect = new Border
                     {
-                        BorderBrush = new SolidColorBrush(Colors.DarkBlue),
+                        BorderBrush = TryFindResource("Element.Border.Required") as SolidColorBrush ?? Brushes.DarkBlue,
                         BorderThickness = new Thickness(3),
-                        Background = new SolidColorBrush(Colors.WhiteSmoke),
+                        Background = TryFindResource("Panel.Background.Level3") as SolidColorBrush ?? Brushes.WhiteSmoke,
                         Width = UserSettings.All.EditorWidth,
                         Height = UserSettings.All.EditorHeight,
                         Tag = "N",
@@ -289,7 +290,8 @@ namespace ScreenToGif.Windows.Other
                             {
                                 VerticalAlignment = VerticalAlignment.Center,
                                 Padding = new Thickness(2),
-                                Text = LocalizationHelper.Get("Editor")
+                                Text = LocalizationHelper.Get("Editor"),
+                                Foreground = TryFindResource("Element.Foreground") as SolidColorBrush ?? Brushes.Black,
                             }
                         }
                     };
@@ -309,9 +311,9 @@ namespace ScreenToGif.Windows.Other
 
                     var rect = new Border
                     {
-                        BorderBrush = new SolidColorBrush(Colors.DarkBlue),
+                        BorderBrush = TryFindResource("Element.Border.Required") as SolidColorBrush ?? Brushes.DarkBlue,
                         BorderThickness = new Thickness(3),
-                        Background = new SolidColorBrush(Colors.WhiteSmoke),
+                        Background = TryFindResource("Panel.Background.Level3") as SolidColorBrush ?? Brushes.WhiteSmoke,
                         Width = UserSettings.All.StartupWidth,
                         Height = UserSettings.All.StartupHeight,
                         Tag = "N",
@@ -321,7 +323,8 @@ namespace ScreenToGif.Windows.Other
                             {
                                 VerticalAlignment = VerticalAlignment.Center,
                                 Padding = new Thickness(2),
-                                Text = (LocalizationHelper.Get("Title.StartUp") ?? "").Remove("ScreenToGif - ")
+                                Text = (LocalizationHelper.Get("Title.StartUp") ?? "").Remove("ScreenToGif - "),
+                                Foreground = TryFindResource("Element.Foreground") as SolidColorBrush ?? Brushes.Black,
                             }
                         }
                     };
@@ -344,8 +347,8 @@ namespace ScreenToGif.Windows.Other
             {
                 var rect = new Rectangle
                 {
-                    Stroke = new SolidColorBrush(Colors.Black),
-                    Fill = new SolidColorBrush(monitor.IsPrimary ? Colors.LightBlue : Colors.LightGray),
+                    Stroke = TryFindResource("Element.Foreground") as SolidColorBrush ??  Brushes.Black,
+                    Fill = monitor.IsPrimary ? TryFindResource("Element.Background.Checked") as SolidColorBrush ?? Brushes.LightBlue : TryFindResource("Element.Background.Hover") as SolidColorBrush ?? Brushes.LightGray,
                     Width = monitor.Bounds.Width,
                     Height = monitor.Bounds.Height,
                     StrokeThickness = 6,
@@ -369,7 +372,7 @@ namespace ScreenToGif.Windows.Other
             var height = maxY - minY;
 
             var group = new TransformGroup();
-            group.Children.Add(new TranslateTransform(-minX, minY));
+            group.Children.Add(new TranslateTransform(-minX, -minY));
             group.Children.Add(new ScaleTransform(canvas.ActualWidth / width, canvas.ActualHeight / height));
             canvas.RenderTransform = group;
         }

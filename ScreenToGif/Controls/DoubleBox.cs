@@ -194,10 +194,7 @@ namespace ScreenToGif.Controls
 
         #region Custom Events
 
-        /// <summary>
-        /// Create a custom routed event by first registering a RoutedEventID, this event uses the bubbling routing strategy.
-        /// </summary>
-        public static readonly RoutedEvent ValueChangedEvent;
+        public static readonly RoutedEvent ValueChangedEvent = EventManager.RegisterRoutedEvent("ValueChanged", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(DoubleBox));
 
         /// <summary>
         /// Event raised when the numeric value is changed.
@@ -213,8 +210,7 @@ namespace ScreenToGif.Controls
             if (ValueChangedEvent == null)
                 return;
 
-            var newEventArgs = new RoutedEventArgs(ValueChangedEvent);
-            RaiseEvent(newEventArgs);
+            RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
         }
 
         #endregion
@@ -321,16 +317,16 @@ namespace ScreenToGif.Controls
             Text = string.Format(CultureInfo.CurrentCulture, _format, Value);
         }
 
-        //protected override void OnKeyDown(KeyEventArgs e)
-        //{
-        //    if (e.Key == Key.Enter || e.Key == Key.Return)
-        //    {
-        //        e.Handled = true;
-        //        MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
-        //    }
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter || e.Key == Key.Return)
+            {
+                e.Handled = true;
+                MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+            }
 
-        //    base.OnKeyDown(e);
-        //}
+            base.OnKeyDown(e);
+        }
 
         protected override void OnMouseWheel(MouseWheelEventArgs e)
         {

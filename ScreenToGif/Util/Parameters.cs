@@ -1,4 +1,5 @@
-﻿using System.Windows.Media;
+﻿using System.IO.Compression;
+using System.Windows.Media;
 
 namespace ScreenToGif.Util
 {
@@ -49,6 +50,12 @@ namespace ScreenToGif.Util
 
         #endregion
 
+        #region Apng
+
+        public ApngEncoderType ApngEncoder { get; set; }
+
+        #endregion
+
         #region Video
 
         public VideoEncoderType VideoEncoder { get; set; }
@@ -68,6 +75,20 @@ namespace ScreenToGif.Util
         public bool FlipVideo { get; set; }
 
         public int Framerate { get; set; }
+
+        #endregion
+
+        #region Psd
+
+        public bool Compress { get; set; }
+
+        public bool SaveTimeline { get; set; }
+
+        #endregion
+
+        #region Project / Image
+
+        public CompressionLevel CompressionLevel { get; set; }
 
         #endregion
     }

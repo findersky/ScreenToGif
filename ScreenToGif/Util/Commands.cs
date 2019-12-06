@@ -135,12 +135,22 @@ namespace ScreenToGif.Util
 
         #endregion
 
-        #region Zoom100
+        #region Scale Delay
 
-        /// <summary>
-        /// Zoom100 Command, Alt + 0
-        /// </summary>
-        public static RoutedUICommand Zoom100 { get; set; } = new RoutedUICommand("Set Zoom to 100%", "Zoom100", typeof(Commands),
+         /// <summary>
+         /// ScaleDelay Command, Alt + 5
+         /// </summary>
+         public static RoutedUICommand ScaleDelay { get; set; } = new RoutedUICommand("Scale Delay", "ScaleDelay", typeof(Commands),
+               new InputGestureCollection { new KeyGesture(Key.D5, ModifierKeys.Alt, "Alt + 5") });
+
+        #endregion
+
+      #region Zoom100
+
+      /// <summary>
+      /// Zoom100 Command, Alt + 0
+      /// </summary>
+      public static RoutedUICommand Zoom100 { get; set; } = new RoutedUICommand("Set Zoom to 100%", "Zoom100", typeof(Commands),
             new InputGestureCollection { new KeyGesture(Key.D0, ModifierKeys.Alt, "Alt + 0") });
 
         #endregion
@@ -465,6 +475,16 @@ namespace ScreenToGif.Util
         /// </summary>
         public static RoutedUICommand FreeDrawing { get; set; } = new RoutedUICommand("Free Drawing", "FreeDrawing", typeof(Commands),
             new InputGestureCollection { new KeyGesture(Key.D, ModifierKeys.Alt, "Alt + D") });
+
+        #endregion
+
+        #region Shapes
+
+        /// <summary>
+        /// Shapes Command, Alt + J
+        /// </summary>
+        public static RoutedUICommand Shapes { get; set; } = new RoutedUICommand("Shapes", "Shapes", typeof(Commands),
+            new InputGestureCollection { new KeyGesture(Key.J, ModifierKeys.Alt, "Alt + J") });
 
         #endregion
 

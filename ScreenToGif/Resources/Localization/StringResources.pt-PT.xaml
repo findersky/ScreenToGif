@@ -39,113 +39,107 @@
     <!--<s:String x:Key="Update.CloseThis.Detail">This is an older version. You have already downloaded a new version.</s:String>-->
     
     <!--Options Page-->
-    <s:String x:Key="Title.Options">Screen To Gif - Opções</s:String>
-    <s:String x:Key="Application">Geral</s:String>
-    <s:String x:Key="Interface">Interface</s:String>
-    <s:String x:Key="Image">Imagem</s:String>
-    <s:String x:Key="Language">Idioma</s:String>
-    <s:String x:Key="TemporaryFiles">Ficheiros Temp.</s:String>
-    <!--<s:String x:Key="Extras">Extras</s:String>-->
-    <s:String x:Key="Donate">Doação</s:String>
-    <s:String x:Key="About">Sobre</s:String>
+    <s:String x:Key="S.Options.Title">ScreenToGif - Opções</s:String>
+    <s:String x:Key="S.Options.App">Geral</s:String>
+    <s:String x:Key="S.Options.Interface">Interface</s:String>
+    <s:String x:Key="S.Options.Language">Idioma</s:String>
+    <s:String x:Key="S.Options.Storage">Ficheiros Temp.</s:String>
+    <!--<s:String x:Key="S.Options.Extras">Extras</s:String>-->
+    <s:String x:Key="S.Options.Donate">Doação</s:String>
+    <s:String x:Key="S.Options.About">Sobre</s:String>
     
-    <s:String x:Key="S.Application.Other.Homepage">Página Inicial:</s:String>
-    <s:String x:Key="S.Application.Other.Homepage.StartUp">Janela de Início</s:String>
-    <s:String x:Key="S.Application.Other.Homepage.Recorder">Gravador de Ecrã</s:String>
-    <s:String x:Key="S.Application.Other.Homepage.Webcam">Gravador de Câmara</s:String>
-    <s:String x:Key="S.Application.Other.Homepage.Board">Gravador de Tela</s:String>
-    <s:String x:Key="S.Application.Other.Homepage.Editor">Janela do Editor</s:String>
+    <s:String x:Key="S.Options.App.Startup.Window.Startup">Janela de Início</s:String>
+    <s:String x:Key="S.Options.App.Startup.Window.Recorder">Gravador de Ecrã</s:String>
+    <s:String x:Key="S.Options.App.Startup.Window.Webcam">Gravador de Câmara</s:String>
+    <s:String x:Key="S.Options.App.Startup.Window.Board">Gravador de Tela</s:String>
+    <s:String x:Key="S.Options.App.Startup.Window.Editor">Janela do Editor</s:String>
     
-    <s:String x:Key="Application.ScreenRecorder">Gravador de Ecrã</s:String>
-    <s:String x:Key="Application.ScreenRecorder.RecordMouse">Mostar o cursor na gravação.</s:String>
-    <s:String x:Key="Application.ScreenRecorder.RecordClicks">Mostrar cliques do rato.</s:String>
-    <s:String x:Key="Application.ScreenRecorder.SelectCursorColor">Seleccione a cor do cursor</s:String>
-    <s:String x:Key="Application.ScreenRecorder.PreStart">Iniciar com contagem decrescente.</s:String>
-    <!--<s:String x:Key="Application.ScreenRecorder.StepRecording">Enable snapshot mode.</s:String>-->
-    <!--<s:String x:Key="Application.ScreenRecorder.StepRecording.Info">(Each frame will be captured manually by you)</s:String>-->
-    <!--<s:String x:Key="Application.ScreenRecorder.FullRecording">Enable fullscreen mode.</s:String>-->
-    <!--<s:String x:Key="Application.ScreenRecorder.FullRecording.Info">(Experimental, will capture the main screen)</s:String>-->
-    <s:String x:Key="Application.ScreenRecorder.FixedFramerate">Velocidade de fotogramas por segundo fixa.</s:String>
-    <s:String x:Key="Application.ScreenRecorder.FixedFramerate.Info">(Fotogramas constantes, não varia com atrasos da gravação)</s:String>
-    <!--<s:String x:Key="Application.ScreenRecorder.AsyncRecording">Enable asynchronous recording.</s:String>-->
-    <!--<s:String x:Key="Application.ScreenRecorder.AsyncRecording.Info">(It helps reduce the interface lag when recording)</s:String>-->
+    <s:String x:Key="S.Options.Recorder.RecordMouse">Mostar o cursor na gravação.</s:String>
+    <s:String x:Key="S.Options.Recorder.RecordClicks">Mostrar cliques do rato.</s:String>
+    <s:String x:Key="S.Options.Recorder.SelectCursorColor">Seleccione a cor do cursor</s:String>
+    <s:String x:Key="S.Options.Recorder.PreStart">Iniciar com contagem decrescente.</s:String>
+    <!--<s:String x:Key="S.Options.Recorder.StepRecording">Enable snapshot mode.</s:String>-->
+    <!--<s:String x:Key="S.Options.Recorder.StepRecording.Info">(Each frame will be captured manually by you)</s:String>-->
+    <!--<s:String x:Key="S.Options.Recorder.FullRecording">Enable fullscreen mode.</s:String>-->
+    <!--<s:String x:Key="S.Options.Recorder.FullRecording.Info">(Experimental, will capture the main screen)</s:String>-->
+    <s:String x:Key="S.Options.Recorder.FixedFramerate">Velocidade de fotogramas por segundo fixa.</s:String>
+    <s:String x:Key="S.Options.Recorder.FixedFramerate.Info">(Fotogramas constantes, não varia com atrasos da gravação)</s:String>
+    <!--<s:String x:Key="S.Options.Recorder.AsyncRecording">Enable asynchronous recording.</s:String>-->
+    <!--<s:String x:Key="S.Options.Recorder.AsyncRecording.Info">(It helps reduce the interface lag when recording)</s:String>-->
 
-    <s:String x:Key="Application.Other">Outras Definições</s:String>
-    <!--<s:String x:Key="Application.Other.CheckForUpdates">Check for updates.</s:String>-->
+    <s:String x:Key="S.Options.Other">Outras Definições</s:String>
+    <!--<s:String x:Key="S.Options.App.General.CheckForUpdates">Check for updates.</s:String>-->
     
-    <s:String x:Key="Interface.EditorBackground">Fundo do Editor</s:String>
-    <!--<s:String x:Key="Interface.Recorder">Recorder theme</s:String>-->
-    <!--<s:String x:Key="Interface.Background">Background</s:String>-->
-    <!--<s:String x:Key="Interface.Foreground">Foreground</s:String>-->
-    <!--<s:String x:Key="Interface.BoardBackground">Board background</s:String>-->
-    <s:String x:Key="Interface.EditorBackground.Scheme">Esquema de Cores</s:String>
-    <s:String x:Key="Interface.EditorBackground.Scheme.VeryLight">Muito Claro</s:String>
-    <s:String x:Key="Interface.EditorBackground.Scheme.Light">Claro</s:String>
-    <s:String x:Key="Interface.EditorBackground.Scheme.Medium">Médio</s:String>
-    <s:String x:Key="Interface.EditorBackground.Scheme.Dark">Escuro</s:String>
-    <s:String x:Key="Interface.EditorBackground.Scheme.Custom">Personalizado</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground">Fundo do Editor</s:String>
+    <!--<s:String x:Key="S.Options.Interface.Recorder">Recorder theme</s:String>-->
+    <!--<s:String x:Key="S.Options.Interface.Background">Background</s:String>-->
+    <!--<s:String x:Key="S.Options.Interface.Foreground">Foreground</s:String>-->
+    <!--<s:String x:Key="S.Options.Interface.BoardBackground">Board background</s:String>-->
+    <s:String x:Key="S.Options.Interface.Theme.Scheme">Esquema de Cores</s:String>
+    <s:String x:Key="S.Options.Interface.Theme.Scheme.VeryLight">Muito Claro</s:String>
+    <s:String x:Key="S.Options.Interface.Theme.Scheme.Light">Claro</s:String>
+    <s:String x:Key="S.Options.Interface.Theme.Scheme.Medium">Médio</s:String>
+    <s:String x:Key="S.Options.Interface.Theme.Scheme.Dark">Escuro</s:String>
+    <s:String x:Key="S.Options.Interface.Theme.Scheme.Custom">Personalizado</s:String>
     
-    <s:String x:Key="Interface.EditorBackground.GridSize">Tamanho da Grelha</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.VerySmall">Muito Pequeno</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.Small">Pequeno</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.Medium">Médio</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.Large">Grande</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.VeryLarge">Muito Grande</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.ILikeBigSquares">Gosto de Quadrados Grandes</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.ImBlind">Sou Cego</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.Custom">Personalizado</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize">Tamanho da Grelha</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.VerySmall">Muito Pequeno</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.Small">Pequeno</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.Medium">Médio</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.Large">Grande</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.VeryLarge">Muito Grande</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.ILikeBigSquares">Gosto de Quadrados Grandes</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.ImBlind">Sou Cego</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.Custom">Personalizado</s:String>
 
-    <!--<s:String x:Key="Interface.EditorBackground.BaseColor">Base Color</s:String>-->
-    <s:String x:Key="Interface.EditorBackground.EvenColor">1ª Cor</s:String>
-    <s:String x:Key="Interface.EditorBackground.OddColor">2ª Cor</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.Height">Altura</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.Width">Largura</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.Apply">Aplicar</s:String>
-
-    <s:String x:Key="Interface.Other">Outras Definições</s:String>
-    <s:String x:Key="Interface.Other.ExtendChrome">Estender Cabeçalho.</s:String>
-    <!--<s:String x:Key="Interface.Other.HideTitleBar">Hide the title bar (thin mode).</s:String>-->
-    <!--<s:String x:Key="Interface.Other.TripleClickSelection">Enable triple-click to select the text.</s:String>-->
+    <!--<s:String x:Key="S.Options.Interface.EditorBackground.BaseColor">Base Color</s:String>-->
+    <s:String x:Key="S.Options.Interface.EditorBackground.EvenColor">1ª Cor</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.OddColor">2ª Cor</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.Height">Altura</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.Width">Largura</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.Apply">Aplicar</s:String>
+    <s:String x:Key="S.Options.Interface.Other.ExtendChrome">Estender Cabeçalho.</s:String>
+    <!--<s:String x:Key="S.Options.Interface.Other.HideTitleBar">Hide the title bar (thin mode).</s:String>-->
+    <!--<s:String x:Key="S.Options.Interface.Other.TripleClickSelection">Enable triple-click to select the text.</s:String>-->
   
-    <s:String x:Key="S.Shortcuts.Recorders.StartPause">Gravar/Pausar:</s:String>
-    <s:String x:Key="S.Shortcuts.Recorders.Stop">Parar:</s:String>
+    <s:String x:Key="S.Options.Shortcuts.Recorders.StartPause">Gravar/Pausar:</s:String>
+    <s:String x:Key="S.Options.Shortcuts.Recorders.Stop">Parar:</s:String>
     
-    <s:String x:Key="Language.AppLanguage">Idioma da Aplicação</s:String>
+    <s:String x:Key="S.Options.Language.AppLanguage">Idioma da Aplicação</s:String>
     
-    <s:String x:Key="TempFiles.FilesAndFolders">Ficheiros e Pastas Temporárias</s:String>
-    <s:String x:Key="TempFiles.Folders">Pastas:</s:String>
-    <s:String x:Key="TempFiles.Files">Ficheiros:</s:String>
-    <s:String x:Key="TempFiles.OpenFolder">Abrir Pasta</s:String>
-    <s:String x:Key="TempFiles.Clear">Limpar Pasta Temp.</s:String>
-    <!--<s:String x:Key="TempFiles.LogsLocation">Logs folder</s:String>-->
-    <!--<s:String x:Key="TempFiles.LogsLocation.Choose">Choose the location for the error logs files</s:String>-->
-    <!--<s:String x:Key="TempFiles.Location">Location folder</s:String>-->
-    <!--<s:String x:Key="TempFiles.Location.Choose">Choose the location for the temporary files</s:String>-->
-    <!--<s:String x:Key="TempFiles.Settings">Settings location</s:String>-->
-    <!--<s:String x:Key="TempFiles.AppDataPath">AppData:</s:String>-->
-    <!--<s:String x:Key="TempFiles.LocalPath">Local:</s:String>-->
-    <!--<s:String x:Key="TempFiles.NotExists">It doesn't exist</s:String>-->
-    <!--<s:String x:Key="TempFiles.CreateSettings">Create an empty local settings file.</s:String>-->
-    <!--<s:String x:Key="TempFiles.RemoveSettings">Remove the settings file.</s:String>-->
-    <!--<s:String x:Key="TempFiles.SettingsInfo">• Settings loading pattern: Default ◄ AppData ◄ Local.&#x0d;• If there's no settings file present at the Local folder, the app searches inside the AppData folder, Default is used if no settings file present.&#x0d;• If there's no Local settings, all settings are saved on the AppData settings file.</s:String>-->
+    <s:String x:Key="S.Options.Storage.FilesAndFolders">Ficheiros e Pastas Temporárias</s:String>
+    <s:String x:Key="S.Options.Storage.Folders">Pastas:</s:String>
+    <s:String x:Key="S.Options.Storage.Files">Ficheiros:</s:String>
+    <s:String x:Key="S.Options.Storage.OpenFolder">Abrir Pasta</s:String>
+    <s:String x:Key="S.Options.Storage.Clear">Limpar Pasta Temp.</s:String>
+    <!--<s:String x:Key="S.Options.Storage.LogsLocation">Logs folder</s:String>-->
+    <!--<s:String x:Key="S.Options.Storage.LogsLocation.Choose">Choose the location for the error logs files</s:String>-->
+    <!--<s:String x:Key="S.Options.Storage.Location">Location folder</s:String>-->
+    <!--<s:String x:Key="S.Options.Storage.Location.Choose">Choose the location for the temporary files</s:String>-->
+    <!--<s:String x:Key="S.Options.Storage.Settings">Settings location</s:String>-->
+    <!--<s:String x:Key="S.Options.Storage.AppDataPath">AppData:</s:String>-->
+    <!--<s:String x:Key="S.Options.Storage.LocalPath">Local:</s:String>-->
+    <!--<s:String x:Key="S.Options.Storage.NotExists">It doesn't exist</s:String>-->
+    <!--<s:String x:Key="S.Options.Storage.CreateSettings">Create an empty local settings file.</s:String>-->
+    <!--<s:String x:Key="S.Options.Storage.RemoveSettings">Remove the settings file.</s:String>-->
+    <!--<s:String x:Key="S.Options.Storage.SettingsInfo">• Settings loading pattern: Default ◄ AppData ◄ Local.&#x0d;• If there's no settings file present at the Local folder, the app searches inside the AppData folder, Default is used if no settings file present.&#x0d;• If there's no Local settings, all settings are saved on the AppData settings file.</s:String>-->
 
-    <!--<s:String x:Key="Extras.FfmpegLocation">FFmpeg location</s:String>-->
-    <!--<s:String x:Key="Extras.FfmpegLocation.Select">Select the location of the FFmpeg executable</s:String>-->
+    <!--<s:String x:Key="S.Options.Extras.FfmpegLocation">FFmpeg location</s:String>-->
+    <!--<s:String x:Key="S.Options.Extras.FfmpegLocation.Select">Select the location of the FFmpeg executable</s:String>-->
     
-    <s:String x:Key="Donate.IfYouWish">Se me quiser agradecer :D</s:String>
-    <s:String x:Key="Donate.DonateDollar">Doar US$</s:String>
-    <s:String x:Key="Donate.DonateEuro">Doar €</s:String>
-    <s:String x:Key="Donate.Donate">Doar</s:String>
+    <s:String x:Key="S.Options.Donate.Donate.Dollar">Doar US$</s:String>
+    <s:String x:Key="S.Options.Donate.Donate.Euro">Doar €</s:String>
+    <s:String x:Key="S.Options.Donate.Donate">Doar</s:String>
 
-    <s:String x:Key="About.Version">Versão:</s:String>
-    <s:String x:Key="About.Author">Autor: Nicke Manarin</s:String>
-    <s:String x:Key="About.Contact">Contacto</s:String>
-    <!--<s:String x:Key="About.Technical">Technical</s:String>-->
-    <!--<s:String x:Key="About.Technical.License">License:</s:String>-->
-    <!--<s:String x:Key="About.Technical.Free">(This is a completely free app)</s:String>-->
-    <!--<s:String x:Key="About.Technical.SourceCode">Source code:</s:String>-->
-    <s:String x:Key="About.ABigThanksTo">Um Muito Obrigado para</s:String>
-    <!--<s:String x:Key="About.ABigThanksTo.Everyone">All my supporters, people who provided feedback and/or donations.</s:String>-->
+    <s:String x:Key="S.Options.About.Version">Versão:</s:String>
+    <s:String x:Key="S.Options.About.Author">Autor: Nicke Manarin</s:String>
+    <s:String x:Key="S.Options.About.Contact">Contacto</s:String>
+    <!--<s:String x:Key="S.Options.About.Technical">Technical</s:String>-->
+    <!--<s:String x:Key="S.Options.About.Technical.License">License:</s:String>-->
+    <!--<s:String x:Key="S.Options.About.Technical.Free">(This is a completely free app)</s:String>-->
+    <!--<s:String x:Key="S.Options.About.Technical.SourceCode">Source code:</s:String>-->
+    <s:String x:Key="S.Options.About.ABigThanksTo">Um Muito Obrigado para</s:String>
+    <!--<s:String x:Key="S.Options.About.ABigThanksTo.Everyone">All my supporters, people who provided feedback and/or donations.</s:String>-->
 
     <!--Recorder-->
     <s:String x:Key="Recorder.RecordingOptions">Opções de Gravação</s:String>
@@ -165,10 +159,10 @@
     <!--<s:String x:Key="Recorder.FpsRange">Minimum to maximum fps: 1-60 fps</s:String>-->
     <s:String x:Key="Recorder.SnapToWindow">Aderir a Janela (Arraste e large para enquadrar)</s:String>
     <s:String x:Key="Recorder.PreStart">Contagem Decrescente</s:String>
-    <s:String x:Key="Recorder.Paused">Screen To Gif (Pausado)</s:String>
+    <s:String x:Key="Recorder.Paused">ScreenToGif (Pausado)</s:String>
     
     <!--Webcam Recorder-->
-    <s:String x:Key="Webcam.Title">Screen To Gif - Gravador de Câmara</s:String>
+    <s:String x:Key="Webcam.Title">ScreenToGif - Gravador de Câmara</s:String>
     <s:String x:Key="Webcam.NoVideo">Nenhum dispositivo de vídeo encontrado :(</s:String>
     <s:String x:Key="Webcam.CheckVideoDevices">Verificar dispositivos de vídeo.</s:String>
     <!--<s:String x:Key="Webcam.Scale">Scale: x{0:0.##}</s:String>-->
@@ -217,19 +211,19 @@
     <s:String x:Key="InsertFrames.SelectColorFill">Seleccione a Cor de Fundo</s:String>
 
     <!--Import Frames From Video-->
-    <s:String x:Key="ImportVideo.Title">Importar Fotogramas do Vídeo</s:String>
-    <s:String x:Key="ImportVideo.Loading">Carregando...</s:String>
-    <s:String x:Key="ImportVideo.Scale">Escala:</s:String>
-    <s:String x:Key="ImportVideo.Size">Tamanho:</s:String>
-    <s:String x:Key="ImportVideo.Height">Altura:</s:String>
-    <s:String x:Key="ImportVideo.Width">Largura:</s:String>
-    <s:String x:Key="ImportVideo.Framerate">Velocidade de Fotogramas:</s:String>
-    <s:String x:Key="ImportVideo.Fps">FPS</s:String>
-    <s:String x:Key="ImportVideo.Start">Início:</s:String>
-    <s:String x:Key="ImportVideo.End">Fim:</s:String>
-    <s:String x:Key="ImportVideo.Selection">Selecção:</s:String>
-    <s:String x:Key="ImportVideo.Frames">Fotogramas:</s:String>
-    <s:String x:Key="ImportVideo.Duration">Duração:</s:String>
+    <s:String x:Key="S.ImportVideo.Title">Importar Fotogramas do Vídeo</s:String>
+    <s:String x:Key="S.ImportVideo.Loading">Carregando...</s:String>
+    <s:String x:Key="S.ImportVideo.Scale">Escala:</s:String>
+    <s:String x:Key="S.ImportVideo.Size">Tamanho:</s:String>
+    <s:String x:Key="S.ImportVideo.Height">Altura:</s:String>
+    <s:String x:Key="S.ImportVideo.Width">Largura:</s:String>
+    <s:String x:Key="S.ImportVideo.Framerate">Velocidade de Fotogramas:</s:String>
+    <s:String x:Key="S.ImportVideo.Fps">FPS</s:String>
+    <s:String x:Key="S.ImportVideo.Start">Início:</s:String>
+    <s:String x:Key="S.ImportVideo.End">Fim:</s:String>
+    <s:String x:Key="S.ImportVideo.Selection">Selecção:</s:String>
+    <s:String x:Key="S.ImportVideo.Frames">Fotogramas:</s:String>
+    <s:String x:Key="S.ImportVideo.Duration">Duração:</s:String>
     
     <!--Encoder-->
     <s:String x:Key="Encoder.Title">Codificador</s:String>
@@ -251,7 +245,7 @@
     <!--<s:String x:Key="Encoder.Copy.Folder">Copy folder path</s:String>-->
 
     <!--Editor-->
-    <s:String x:Key="Editor.Title">Screen To Gif - Editor</s:String>
+    <s:String x:Key="Editor.Title">ScreenToGif - Editor</s:String>
     <s:String x:Key="Editor.File">Ficheiro</s:String>
     <!--<s:String x:Key="Editor.Home">Home</s:String>-->
     <s:String x:Key="Editor.Playback">Reprodução</s:String>
@@ -586,7 +580,7 @@
     <!--<s:String x:Key="OverrideDelay.Info">This new value will replace the duration (delay) of all selected frames. The value can be from 10ms to 25500ms.</s:String>-->
     <!--<s:String x:Key="IncreaseDecreaseDelay.Info">This value will decrease/increase the duration (delay) of each selected frame.&#x0d;You can decrement/increment by selecting a value between -10000ms and 10000ms, but the final duration of each frame will be restricted to between 10ms and 25500ms</s:String>-->
     
-    <s:String x:Key="Transitions.Lenght">Duração da Transição</s:String>
+    <s:String x:Key="Transitions.Length">Duração da Transição</s:String>
     <!--<s:String x:Key="Transitions.FadeTo">Fade To...</s:String>-->
     <!--<s:String x:Key="Transitions.FadeTo.Frame">The next frame</s:String>-->
     <!--<s:String x:Key="Transitions.FadeTo.Color">A color</s:String>-->

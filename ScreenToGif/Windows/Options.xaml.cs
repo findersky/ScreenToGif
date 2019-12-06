@@ -15,6 +15,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Navigation;
+using System.Windows.Threading;
 using ScreenToGif.Cloud.Imgur;
 using ScreenToGif.Controls;
 using ScreenToGif.Model;
@@ -23,7 +24,6 @@ using ScreenToGif.Windows.Other;
 using Application = System.Windows.Application;
 using ComboBox = System.Windows.Controls.ComboBox;
 using DialogResultWinForms = System.Windows.Forms.DialogResult;
-using Label = System.Windows.Controls.Label;
 using Localization = ScreenToGif.Windows.Other.Localization;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 using Path = System.IO.Path;
@@ -33,7 +33,19 @@ namespace ScreenToGif.Windows
 {
     public partial class Options : Window, INotification
     {
-        #region Variables
+        #region Constants and variables
+
+        internal const int ApplicationIndex = 0;
+        internal const int RecorderIndex = 1;
+        internal const int InterfaceIndex = 2;
+        internal const int AutomatedTasksIndex = 3;
+        internal const int ShortcutsIndex = 4;
+        internal const int LanguageIndex = 5;
+        internal const int TempFilesIndex = 6;
+        internal const int UploadIndex = 7;
+        internal const int ExtrasIndex = 8;
+        internal const int DonateIndex = 9;
+        internal const int AboutIndex = 10;
 
         /// <summary>
         /// The Path of the Temp folder.
@@ -46,9 +58,14 @@ namespace ScreenToGif.Windows
         private int _fileCount;
 
         /// <summary>
-        /// .
+        /// List of tasks.
         /// </summary>
         private ObservableCollection<DefaultTaskModel> _effectList;
+
+        /// <summary>
+        /// The latest size of the grid before being altered.
+        /// </summary>
+        private Rect _latestGridSize = Rect.Empty;
 
         #endregion
 
@@ -57,25 +74,31 @@ namespace ScreenToGif.Windows
             InitializeComponent();
 
 #if UWP
-                PaypalLabel.Visibility = Visibility.Collapsed;
+            //PaypalLabel.Visibility = Visibility.Collapsed;
+            UpdatesCheckBox.Visibility = Visibility.Collapsed;
+            StoreTextBlock.Visibility = Visibility.Visible;
+            TaiwanListBoxItem.Image = LanguagePanel.TryFindResource("Flag.White") as Canvas;
 #endif
         }
 
-        public Options(int index)
+        public Options(int index) : this()
         {
-            InitializeComponent();
-
             SelectTab(index);
-
-#if UWP
-                PaypalLabel.Visibility = Visibility.Collapsed;
-#endif
         }
 
         #region App Settings
 
+        private void StartCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            UserSettings.All.ShowNotificationIcon = true;
+        }
+
         private void NotificationIconCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
         {
+            //Can't have a minimized startup, if the icon is not present on the notification area.
+            if (!UserSettings.All.ShowNotificationIcon)
+                UserSettings.All.StartMinimized = false;
+
             if (App.NotifyIcon != null)
                 App.NotifyIcon.Visibility = UserSettings.All.ShowNotificationIcon ? Visibility.Visible : Visibility.Collapsed;
         }
@@ -86,16 +109,10 @@ namespace ScreenToGif.Windows
 
         private void InterfacePanel_OnLoaded(object sender, RoutedEventArgs e)
         {
-            //Editor
-            GridWidthIntegerBox.Value = (int)UserSettings.All.GridSize.Width;
-            GridHeightIntegerBox.Value = (int)UserSettings.All.GridSize.Height;
-
+            //Editor.
             CheckScheme(false);
             CheckSize(false);
-
-            //Recorder
-            CheckRecorderScheme(false);
-
+            
             //Board
             //GridWidth2TextBox.Value = (int)Settings.Default.BoardGridSize.Width;
             //GridHeight2TextBox.Value = (int)Settings.Default.BoardGridSize.Height;
@@ -104,16 +121,50 @@ namespace ScreenToGif.Windows
             //CheckBoardSize(false);
         }
 
+        private void AppThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!IsLoaded)
+                return;
+
+            try
+            {
+                var selected = AppThemeComboBox.SelectedValue?.ToString();
+
+                if (string.IsNullOrWhiteSpace(selected))
+                    throw new Exception("No theme was selected.");
+
+                ThemeHelper.SelectTheme(selected);
+
+                App.NotifyIcon?.RefreshVisual();
+            }
+            catch (Exception ex)
+            {
+                LogWriter.Log(ex, "Error while selecting the app's theme.");
+                ExceptionDialog.Ok(ex, Title, "Error while selecting the app's theme", ex.Message);
+            }
+        }
+
         private void ColorSchemesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             CheckScheme();
         }
 
+        private void ColorBox_ColorChanged(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded || !(sender is ColorBox box))
+                return;
+
+            if (box.Tag.Equals("Editor"))
+                CheckScheme(false);
+            else
+                CheckBoardScheme(false);
+        }
+
         private void ColorBorder_OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            var border = sender as Border;
-            if (border == null) return;
-
+            if (!(sender is Border border))
+                return;
+            
             var color = ((SolidColorBrush)border.Background).Color;
 
             var colorPicker = new ColorSelector(color) { Owner = this };
@@ -125,8 +176,6 @@ namespace ScreenToGif.Windows
 
                 if (border.Tag.Equals("Editor"))
                     CheckScheme(false);
-                else if (border.Tag.Equals("Recorder"))
-                    CheckRecorderScheme(false);
                 else
                     CheckBoardScheme(false);
             }
@@ -135,11 +184,6 @@ namespace ScreenToGif.Windows
         private void BoardColorSchemesComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             CheckBoardScheme();
-        }
-
-        private void RecorderSchemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            CheckRecorderScheme();
         }
 
         private void CheckScheme(bool schemePicked = true)
@@ -155,132 +199,65 @@ namespace ScreenToGif.Windows
             var mediumEven = Color.FromArgb(255, 153, 153, 153);
             var mediumOdd = Color.FromArgb(255, 102, 102, 102);
 
-            var darkEven = Color.FromArgb(255, 102, 102, 102);
-            var darkOdd = Color.FromArgb(255, 51, 51, 51);
+            var darkEven = Color.FromArgb(255, 45, 45, 45);
+            var darkOdd = Color.FromArgb(255, 50, 50, 50);
 
             #endregion
 
-            if (schemePicked)
+            try
             {
-                #region If ComboBox Selected
+                EvenColorBox.IgnoreEvent = true;
+                OddColorBox.IgnoreEvent = true;
 
-                switch (ColorSchemesComboBox.SelectedIndex)
+                if (schemePicked)
                 {
-                    case 0:
-                        EvenColorBorder.Background = new SolidColorBrush(veryLightEven);
-                        OddColorBorder.Background = new SolidColorBrush(veryLightOdd);
-                        break;
-                    case 1:
-                        EvenColorBorder.Background = new SolidColorBrush(lightEven);
-                        OddColorBorder.Background = new SolidColorBrush(lightOdd);
-                        break;
-                    case 2:
-                        EvenColorBorder.Background = new SolidColorBrush(mediumEven);
-                        OddColorBorder.Background = new SolidColorBrush(mediumOdd);
-                        break;
-                    case 3:
-                        EvenColorBorder.Background = new SolidColorBrush(darkEven);
-                        OddColorBorder.Background = new SolidColorBrush(darkOdd);
-                        break;
+                    #region If ComboBox Selected
+
+                    switch (ColorSchemesComboBox.SelectedIndex)
+                    {
+                        case 0:
+                            UserSettings.All.GridColor1 = veryLightEven;
+                            UserSettings.All.GridColor2 = veryLightOdd;
+                            break;
+                        case 1:
+                            UserSettings.All.GridColor1 = lightEven;
+                            UserSettings.All.GridColor2 = lightOdd;
+                            break;
+                        case 2:
+                            UserSettings.All.GridColor1 = mediumEven;
+                            UserSettings.All.GridColor2 = mediumOdd;
+                            break;
+                        case 3:
+                            UserSettings.All.GridColor1 = darkEven;
+                            UserSettings.All.GridColor2 = darkOdd;
+                            break;
+                    }
+
+                    return;
+
+                    #endregion
                 }
 
-                return;
+                #region If Color Picked
+
+                if (UserSettings.All.GridColor1.Equals(veryLightEven) && UserSettings.All.GridColor2.Equals(veryLightOdd))
+                    ColorSchemesComboBox.SelectedIndex = 0;
+                else if (UserSettings.All.GridColor1.Equals(lightEven) && UserSettings.All.GridColor2.Equals(lightOdd))
+                    ColorSchemesComboBox.SelectedIndex = 1;
+                else if (UserSettings.All.GridColor1.Equals(mediumEven) && UserSettings.All.GridColor2.Equals(mediumOdd))
+                    ColorSchemesComboBox.SelectedIndex = 2;
+                else if (UserSettings.All.GridColor1.Equals(darkEven) && UserSettings.All.GridColor2.Equals(darkOdd))
+                    ColorSchemesComboBox.SelectedIndex = 3;
+                else
+                    ColorSchemesComboBox.SelectedIndex = 5;
 
                 #endregion
             }
-
-            #region If Color Picked
-
-            var evenColor = ((SolidColorBrush)EvenColorBorder.Background).Color;
-            var oddColor = ((SolidColorBrush)OddColorBorder.Background).Color;
-
-            if (evenColor.Equals(veryLightEven) && oddColor.Equals(veryLightOdd))
+            finally
             {
-                ColorSchemesComboBox.SelectedIndex = 0;
+                EvenColorBox.IgnoreEvent = false;
+                OddColorBox.IgnoreEvent = false;
             }
-            else if (evenColor.Equals(lightEven) && oddColor.Equals(lightOdd))
-            {
-                ColorSchemesComboBox.SelectedIndex = 1;
-            }
-            else if (evenColor.Equals(mediumEven) && oddColor.Equals(mediumOdd))
-            {
-                ColorSchemesComboBox.SelectedIndex = 2;
-            }
-            else if (evenColor.Equals(darkEven) && oddColor.Equals(darkOdd))
-            {
-                ColorSchemesComboBox.SelectedIndex = 3;
-            }
-            else
-            {
-                ColorSchemesComboBox.SelectedIndex = 5;
-            }
-
-            #endregion
-        }
-
-        private void CheckRecorderScheme(bool schemePicked = true)
-        {
-            #region Colors
-
-            var veryLightBack = Color.FromArgb(255, 255, 255, 255);
-            var veryLightFore = Color.FromArgb(255, 0, 0, 0);
-
-            var lightBack = Color.FromArgb(255, 245, 245, 245);
-            var lightFore = Color.FromArgb(255, 0, 0, 0);
-
-            var mediumBack = Color.FromArgb(255, 211, 211, 211);
-            var mediumFore = Color.FromArgb(255, 0, 0, 0);
-
-            #endregion
-
-            if (schemePicked)
-            {
-                #region If ComboBox Selected
-
-                switch (RecorderSchemeComboBox.SelectedIndex)
-                {
-                    case 0:
-                        RecorderBackgroundBorder.Background = new SolidColorBrush(veryLightBack);
-                        RecorderForegroundBorder.Background = new SolidColorBrush(veryLightFore);
-                        break;
-                    case 1:
-                        RecorderBackgroundBorder.Background = new SolidColorBrush(lightBack);
-                        RecorderForegroundBorder.Background = new SolidColorBrush(lightFore);
-                        break;
-                    case 2:
-                        RecorderBackgroundBorder.Background = new SolidColorBrush(mediumBack);
-                        RecorderForegroundBorder.Background = new SolidColorBrush(mediumFore);
-                        break;
-                }
-
-                return;
-
-                #endregion
-            }
-
-            #region If Color Picked
-
-            var backColor = ((SolidColorBrush)RecorderBackgroundBorder.Background).Color;
-            var foreColor = ((SolidColorBrush)RecorderForegroundBorder.Background).Color;
-
-            if (backColor.Equals(veryLightBack) && foreColor.Equals(veryLightFore))
-            {
-                RecorderSchemeComboBox.SelectedIndex = 0;
-            }
-            else if (backColor.Equals(lightBack) && foreColor.Equals(lightFore))
-            {
-                RecorderSchemeComboBox.SelectedIndex = 1;
-            }
-            else if (backColor.Equals(mediumBack) && foreColor.Equals(mediumFore))
-            {
-                RecorderSchemeComboBox.SelectedIndex = 2;
-            }
-            else
-            {
-                RecorderSchemeComboBox.SelectedIndex = 4;
-            }
-
-            #endregion
         }
 
         private void CheckBoardScheme(bool schemePicked = true)
@@ -383,139 +360,127 @@ namespace ScreenToGif.Windows
 
         private void GridSizeBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            GridSizeContextMenu.PlacementTarget = GridSizeBorder;
-            GridSizeContextMenu.IsOpen = true;
+            GridWidthIntegerUpDown.ValueChanged -= GridSizeIntegerUpDown_ValueChanged;
+            GridHeightIntegerUpDown.ValueChanged -= GridSizeIntegerUpDown_ValueChanged;
+
+            GridWidthIntegerUpDown.Value = (int)UserSettings.All.GridSize.Width;
+            GridHeightIntegerUpDown.Value = (int)UserSettings.All.GridSize.Height;
+            GridSizeGrid.Visibility = Visibility.Visible;
+            _latestGridSize = UserSettings.All.GridSize;
+
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => GridHeightIntegerUpDown.Focus()));
+            
+            GridWidthIntegerUpDown.ValueChanged += GridSizeIntegerUpDown_ValueChanged;
+            GridHeightIntegerUpDown.ValueChanged += GridSizeIntegerUpDown_ValueChanged;
         }
 
-        private void GridSize2Border_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void GridSizeIntegerUpDown_ValueChanged(object sender, RoutedEventArgs e)
         {
-            //GridSize2ContextMenu.PlacementTarget = GridSize2Border;
-            //GridSize2ContextMenu.IsOpen = true;
-        }
-
-        private void CheckSize(bool sizePicked = true)
-        {
-            if (sizePicked)
-            {
-                #region If ComboBox Selected
-
-                switch (GridSizeComboBox.SelectedIndex)
-                {
-                    case 0:
-                        UserSettings.All.GridSize = new Rect(new Point(0, 0), new Point(10, 10));
-                        break;
-                    case 1:
-                        UserSettings.All.GridSize = new Rect(new Point(0, 0), new Point(15, 15));
-                        break;
-                    case 2:
-                        UserSettings.All.GridSize = new Rect(new Point(0, 0), new Point(20, 20));
-                        break;
-                    case 3:
-                        UserSettings.All.GridSize = new Rect(new Point(0, 0), new Point(25, 25));
-                        break;
-                    case 4:
-                        UserSettings.All.GridSize = new Rect(new Point(0, 0), new Point(30, 30));
-                        break;
-                    case 5:
-                        UserSettings.All.GridSize = new Rect(new Point(0, 0), new Point(50, 50));
-                        break;
-                    case 6:
-                        UserSettings.All.GridSize = new Rect(new Point(0, 0), new Point(100, 100));
-                        break;
-                }
-
+            if (!IsLoaded)
                 return;
 
-                #endregion
-            }
-
-            #region If Settings Loaded
-
-            var sizeW = UserSettings.All.GridSize.Width;
-            var sizeH = UserSettings.All.GridSize.Height;
-
-            if (sizeW != sizeH)
-            {
-                GridSizeComboBox.SelectedIndex = 8;
-                return;
-            }
-
-            if (sizeW == 10)
-            {
-                GridSizeComboBox.SelectedIndex = 0;
-            }
-            else if (sizeW == 15)
-            {
-                GridSizeComboBox.SelectedIndex = 1;
-            }
-            else if (sizeW == 20)
-            {
-                GridSizeComboBox.SelectedIndex = 2;
-            }
-            else if (sizeW == 25)
-            {
-                GridSizeComboBox.SelectedIndex = 3;
-            }
-            else if (sizeW == 30)
-            {
-                GridSizeComboBox.SelectedIndex = 4;
-            }
-            else if (sizeW == 50)
-            {
-                GridSizeComboBox.SelectedIndex = 5;
-            }
-            else if (sizeW == 100)
-            {
-                GridSizeComboBox.SelectedIndex = 6;
-            }
-            else
-            {
-                GridSizeComboBox.SelectedIndex = 8;
-            }
-
-            #endregion
-        }
-
-        private void GridSizeIntegerBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            var textBox = sender as IntegerBox;
-
-            if (textBox == null)
-                return;
-
-            if (textBox.Value < 1)
-                textBox.Text = "10";
-
-            if (string.Equals("Editor", textBox.Tag))
-                AdjustToSize();
-            else
-                AdjustToSizeBoard();
-        }
-
-        private void GridSizeIntegerBox_MouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            var textBox = sender as IntegerBox;
-
-            if (textBox == null)
-                return;
-
-            if (string.Equals("Editor", textBox.Tag))
-                AdjustToSize();
-            else
-                AdjustToSizeBoard();
-        }
-
-        private void AdjustToSize()
-        {
             try
             {
-                UserSettings.All.GridSize = new Rect(new Point(0, 0), new Point(GridWidthIntegerBox.Value, GridHeightIntegerBox.Value));
+                UserSettings.All.GridSize = new Rect(new Point(0, 0), new Point(GridWidthIntegerUpDown.Value, GridHeightIntegerUpDown.Value));
 
                 CheckSize(false);
             }
             catch (Exception ex)
             {
                 LogWriter.Log(ex, "Adjusting the Grid Size");
+            }
+        }
+
+        private void ApplySizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => GridSizeBorder.Focus()));
+            GridSizeGrid.Visibility = Visibility.Collapsed;
+
+            GridSizeIntegerUpDown_ValueChanged(sender, e);
+        }
+
+        private void CancelSizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => GridSizeBorder.Focus()));
+            GridSizeGrid.Visibility = Visibility.Collapsed;
+            UserSettings.All.GridSize = _latestGridSize;
+
+            CheckSize(false);
+        }
+
+        private void CheckSize(bool sizePicked = true)
+        {
+            try
+            {
+                GridSizeComboBox.SelectionChanged -= GridSizeComboBox_SelectionChanged;
+
+                if (sizePicked)
+                {
+                    #region If ComboBox Selected
+
+                    switch (GridSizeComboBox.SelectedIndex)
+                    {
+                        case 0:
+                            UserSettings.All.GridSize = new Rect(new Point(0, 0), new Point(10, 10));
+                            break;
+                        case 1:
+                            UserSettings.All.GridSize = new Rect(new Point(0, 0), new Point(15, 15));
+                            break;
+                        case 2:
+                            UserSettings.All.GridSize = new Rect(new Point(0, 0), new Point(20, 20));
+                            break;
+                        case 3:
+                            UserSettings.All.GridSize = new Rect(new Point(0, 0), new Point(25, 25));
+                            break;
+                        case 4:
+                            UserSettings.All.GridSize = new Rect(new Point(0, 0), new Point(30, 30));
+                            break;
+                        case 5:
+                            UserSettings.All.GridSize = new Rect(new Point(0, 0), new Point(50, 50));
+                            break;
+                        case 6:
+                            UserSettings.All.GridSize = new Rect(new Point(0, 0), new Point(100, 100));
+                            break;
+                    }
+
+                    return;
+
+                    #endregion
+                }
+
+                #region If Settings Loaded
+
+                var sizeW = UserSettings.All.GridSize.Width;
+                var sizeH = UserSettings.All.GridSize.Height;
+
+                if (sizeW != sizeH)
+                {
+                    GridSizeComboBox.SelectedIndex = 8;
+                    return;
+                }
+
+                if (sizeW == 10)
+                    GridSizeComboBox.SelectedIndex = 0;
+                else if (sizeW == 15)
+                    GridSizeComboBox.SelectedIndex = 1;
+                else if (sizeW == 20)
+                    GridSizeComboBox.SelectedIndex = 2;
+                else if (sizeW == 25)
+                    GridSizeComboBox.SelectedIndex = 3;
+                else if (sizeW == 30)
+                    GridSizeComboBox.SelectedIndex = 4;
+                else if (sizeW == 50)
+                    GridSizeComboBox.SelectedIndex = 5;
+                else if (sizeW == 100)
+                    GridSizeComboBox.SelectedIndex = 6;
+                else
+                    GridSizeComboBox.SelectedIndex = 8;
+
+                #endregion
+            }
+            finally
+            {
+                GridSizeComboBox.SelectionChanged += GridSizeComboBox_SelectionChanged;
             }
         }
 
@@ -631,22 +596,22 @@ namespace ScreenToGif.Windows
 
         private void MoveUp_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = DefaultsPanel.IsVisible && TasksDataGrid.SelectedIndex > 0;
+            e.CanExecute = TasksPanel.IsVisible && TasksDataGrid.SelectedIndex > 0;
         }
 
         private void MoveDown_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = DefaultsPanel.IsVisible && TasksDataGrid.SelectedIndex < TasksDataGrid.Items.Count - 1;
+            e.CanExecute = TasksPanel.IsVisible && TasksDataGrid.SelectedIndex > -1 && TasksDataGrid.SelectedIndex < TasksDataGrid.Items.Count - 1;
         }
 
         private void Remove_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = DefaultsPanel.IsVisible && TasksDataGrid.SelectedIndex != -1;
+            e.CanExecute = TasksPanel.IsVisible && TasksDataGrid.SelectedIndex != -1;
         }
 
         private void Add_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = DefaultsPanel.IsVisible;
+            e.CanExecute = TasksPanel.IsVisible;
         }
 
         private void MoveUp_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -815,7 +780,7 @@ namespace ScreenToGif.Windows
             }
             catch (Exception ex)
             {
-                ErrorDialog.Ok(LocalizationHelper.Get("Title.Options"), "Error while stopping", ex.Message, ex);
+                ErrorDialog.Ok(LocalizationHelper.Get("S.Options.Title"), "Error while stopping", ex.Message, ex);
                 LogWriter.Log(ex, "Error while trying to set the language.");
             }
         }
@@ -875,9 +840,6 @@ namespace ScreenToGif.Windows
             if (TempPanel.Visibility != Visibility.Visible)
                 return;
 
-            if (string.IsNullOrWhiteSpace(UserSettings.All.TemporaryFolder))
-                UserSettings.All.TemporaryFolder = Path.GetTempPath();
-
             _tempDel = CheckTemp;
             _tempDel.BeginInvoke(e, CheckTempCallBack, null);
 
@@ -903,7 +865,7 @@ namespace ScreenToGif.Windows
                 AppDataPathTextBlock.TextDecorations.Add(new TextDecoration(TextDecorationLocation.Strikethrough, new Pen(Brushes.DarkSlateGray, 1),
                     0, TextDecorationUnit.FontRecommended, TextDecorationUnit.FontRecommended));
 
-                AppDataPathTextBlock.SetResourceReference(ToolTipProperty, "TempFiles.NotExists");
+                AppDataPathTextBlock.SetResourceReference(ToolTipProperty, "S.Options.Storage.NotExists");
             }
 
             //Local.
@@ -912,7 +874,7 @@ namespace ScreenToGif.Windows
                 LocalPathTextBlock.TextDecorations.Add(new TextDecoration(TextDecorationLocation.Strikethrough, new Pen(Brushes.DarkSlateGray, 1),
                     0, TextDecorationUnit.FontRecommended, TextDecorationUnit.FontRecommended));
 
-                LocalPathTextBlock.SetResourceReference(ToolTipProperty, "TempFiles.NotExists");
+                LocalPathTextBlock.SetResourceReference(ToolTipProperty, "S.Options.Storage.NotExists");
             }
 
             #endregion
@@ -933,8 +895,8 @@ namespace ScreenToGif.Windows
         {
             var folderDialog = new System.Windows.Forms.FolderBrowserDialog { ShowNewFolderButton = true };
 
-            if (!string.IsNullOrWhiteSpace(UserSettings.All.TemporaryFolder))
-                folderDialog.SelectedPath = UserSettings.All.TemporaryFolder;
+            if (!string.IsNullOrWhiteSpace(UserSettings.All.TemporaryFolderResolved))
+                folderDialog.SelectedPath = UserSettings.All.TemporaryFolderResolved;
 
             if (folderDialog.ShowDialog() == DialogResultWinForms.OK)
                 UserSettings.All.TemporaryFolder = folderDialog.SelectedPath;
@@ -944,7 +906,7 @@ namespace ScreenToGif.Windows
         {
             try
             {
-                var path = Path.Combine(UserSettings.All.TemporaryFolder, "ScreenToGif", "Recording");
+                var path = Path.Combine(UserSettings.All.TemporaryFolderResolved, "ScreenToGif", "Recording");
 
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);
@@ -963,18 +925,18 @@ namespace ScreenToGif.Windows
 
             try
             {
-                var path = Path.Combine(UserSettings.All.TemporaryFolder, "ScreenToGif", "Recording");
+                var path = Path.Combine(UserSettings.All.TemporaryFolderResolved, "ScreenToGif", "Recording");
 
                 if (!Directory.Exists(path))
                 {
                     _folderList.Clear();
-                    TempSeparator.TextRight = LocalizationHelper.Get("TempFiles.FilesAndFolders.None");
+                    TempSeparator.TextRight = LocalizationHelper.Get("S.Options.Storage.FilesAndFolders.None");
                     return;
                 }
 
                 _folderList = await Task.Factory.StartNew(() => Directory.GetDirectories(path, "*", SearchOption.TopDirectoryOnly).Select(x => new DirectoryInfo(x)).ToList());
 
-                if (Dialog.Ask("ScreenToGif", LocalizationHelper.Get("TempFiles.KeepRecent"), LocalizationHelper.Get("TempFiles.KeepRecent.Info")))
+                if (Dialog.Ask("ScreenToGif", LocalizationHelper.Get("S.Options.Storage.KeepRecent"), LocalizationHelper.Get("S.Options.Storage.KeepRecent.Info")))
                     _folderList = await Task.Factory.StartNew(() => _folderList.Where(w => (DateTime.Now - w.CreationTime).Days > (UserSettings.All.AutomaticCleanUpDays > 0 ? UserSettings.All.AutomaticCleanUpDays : 5)).ToList());
 
                 foreach (var folder in _folderList)
@@ -996,7 +958,7 @@ namespace ScreenToGif.Windows
                 App.MainViewModel.CheckDiskSpace();
             }
 
-            TempSeparator.TextRight = string.Format(LocalizationHelper.Get("TempFiles.FilesAndFolders.Count") ?? "{0} folders and {1} files", _folderList.Count.ToString("##,##0"),
+            TempSeparator.TextRight = string.Format(LocalizationHelper.Get("S.Options.Storage.FilesAndFolders.Count", "{0} folders and {1} files"), _folderList.Count.ToString("##,##0"),
                 _folderList.Sum(folder => Directory.EnumerateFiles(folder.FullName).Count()).ToString("##,##0"));
 
             ClearTempButton.IsEnabled = _folderList.Any();
@@ -1042,7 +1004,7 @@ namespace ScreenToGif.Windows
                 AppDataPathTextBlock.TextDecorations.Add(new TextDecoration(TextDecorationLocation.Strikethrough,
                     new Pen(Brushes.DarkSlateGray, 1), 0, TextDecorationUnit.FontRecommended, TextDecorationUnit.FontRecommended));
 
-                AppDataPathTextBlock.SetResourceReference(ToolTipProperty, "TempFiles.NotExists");
+                AppDataPathTextBlock.SetResourceReference(ToolTipProperty, "S.Options.Storage.NotExists");
             }
             catch (Exception ex)
             {
@@ -1089,7 +1051,7 @@ namespace ScreenToGif.Windows
                 LocalPathTextBlock.TextDecorations.Add(new TextDecoration(TextDecorationLocation.Strikethrough,
                     new Pen(Brushes.DarkSlateGray, 1), 0, TextDecorationUnit.FontRecommended, TextDecorationUnit.FontRecommended));
 
-                LocalPathTextBlock.SetResourceReference(ToolTipProperty, "TempFiles.NotExists");
+                LocalPathTextBlock.SetResourceReference(ToolTipProperty, "S.Options.Storage.NotExists");
             }
             catch (Exception ex)
             {
@@ -1109,7 +1071,7 @@ namespace ScreenToGif.Windows
 
             _folderList = new List<DirectoryInfo>();
 
-            var path = Path.Combine(UserSettings.All.TemporaryFolder, "ScreenToGif", "Recording");
+            var path = Path.Combine(UserSettings.All.TemporaryFolderResolved, "ScreenToGif", "Recording");
 
             if (!Directory.Exists(path)) return;
 
@@ -1128,7 +1090,7 @@ namespace ScreenToGif.Windows
                 {
                     App.MainViewModel.CheckDiskSpace();
 
-                    TempSeparator.TextRight = string.Format(LocalizationHelper.Get("TempFiles.FilesAndFolders.Count") ?? "{0} folders and {1} files", _folderList.Count.ToString("##,##0"), _fileCount.ToString("##,##0"));
+                    TempSeparator.TextRight = string.Format(LocalizationHelper.Get("S.Options.Storage.FilesAndFolders.Count", "{0} folders and {1} files"), _folderList.Count.ToString("##,##0"), _fileCount.ToString("##,##0"));
 
                     ClearTempButton.IsEnabled = _folderList.Any();
                 });
@@ -1153,7 +1115,7 @@ namespace ScreenToGif.Windows
             catch (Exception ex)
             {
                 LogWriter.Log(ex, "Creating the link and opening a Imgur related page");
-                StatusBand.Error(LocalizationHelper.Get("S.Upload.Imgur.Auth.NotPossible"));
+                StatusBand.Error(LocalizationHelper.Get("S.Options.Upload.Imgur.Auth.NotPossible"));
             }
         }
 
@@ -1161,7 +1123,7 @@ namespace ScreenToGif.Windows
         {
             if (string.IsNullOrWhiteSpace(UserSettings.All.ImgurOAuthToken))
             {
-                StatusBand.Warning(LocalizationHelper.Get("S.Upload.Imgur.Auth.Missing"));
+                StatusBand.Warning(LocalizationHelper.Get("S.Options.Upload.Imgur.Auth.Missing"));
                 return;
             }
 
@@ -1173,10 +1135,10 @@ namespace ScreenToGif.Windows
                 if (await Imgur.GetAccessToken())
                 {
                     UserSettings.All.ImgurOAuthToken = null;
-                    StatusBand.Info(LocalizationHelper.Get("S.Upload.Imgur.Auth.Completed"));
+                    StatusBand.Info(LocalizationHelper.Get("S.Options.Upload.Imgur.Auth.Completed"));
                 }
                 else
-                    StatusBand.Warning(LocalizationHelper.Get("S.Upload.Imgur.Auth.Error"));
+                    StatusBand.Warning(LocalizationHelper.Get("S.Options.Upload.Imgur.Auth.Error"));
             }
             catch (Exception ex)
             {
@@ -1193,7 +1155,7 @@ namespace ScreenToGif.Windows
         {
             if (string.IsNullOrWhiteSpace(UserSettings.All.ImgurRefreshToken))
             {
-                StatusBand.Warning(LocalizationHelper.Get("S.Upload.Imgur.Refresh.None"));
+                StatusBand.Warning(LocalizationHelper.Get("S.Options.Upload.Imgur.Refresh.None"));
                 return;
             }
 
@@ -1203,9 +1165,9 @@ namespace ScreenToGif.Windows
                 StatusBand.Hide();
 
                 if (await Imgur.RefreshToken())
-                    StatusBand.Info(LocalizationHelper.Get("S.Upload.Imgur.Auth.Completed"));
+                    StatusBand.Info(LocalizationHelper.Get("S.Options.Upload.Imgur.Auth.Completed"));
                 else
-                    StatusBand.Warning(LocalizationHelper.Get("S.Upload.Imgur.Auth.Error"));
+                    StatusBand.Warning(LocalizationHelper.Get("S.Options.Upload.Imgur.Auth.Error"));
             }
             catch (Exception ex)
             {
@@ -1228,7 +1190,7 @@ namespace ScreenToGif.Windows
             UserSettings.All.ImgurSelectedAlbum = null;
             ImgurAlbumComboBox.ItemsSource = null;
 
-            StatusBand.Info(LocalizationHelper.Get("S.Upload.Imgur.Removed"));
+            StatusBand.Info(LocalizationHelper.Get("S.Options.Upload.Imgur.Removed"));
             UpdateImgurStatus();
             UpdateAlbumList();
         }
@@ -1247,9 +1209,9 @@ namespace ScreenToGif.Windows
 
         private void UpdateImgurStatus()
         {
-            ImgurTextBlock.Text = UserSettings.All.ImgurAccessToken == null || !UserSettings.All.ImgurExpireDate.HasValue ? LocalizationHelper.Get("S.Upload.Imgur.NotAuthorized") :
-                UserSettings.All.ImgurExpireDate < DateTime.UtcNow ? string.Format(LocalizationHelper.Get("S.Upload.Imgur.Expired"), UserSettings.All.ImgurExpireDate.Value.ToLocalTime().ToString("g", CultureInfo.CurrentUICulture)) :
-                    string.Format(LocalizationHelper.Get("S.Upload.Imgur.Valid"), UserSettings.All.ImgurExpireDate.Value.ToLocalTime().ToString("g", CultureInfo.CurrentUICulture));
+            ImgurTextBlock.Text = UserSettings.All.ImgurAccessToken == null || !UserSettings.All.ImgurExpireDate.HasValue ? LocalizationHelper.Get("S.Options.Upload.Imgur.NotAuthorized") :
+                UserSettings.All.ImgurExpireDate < DateTime.UtcNow ? string.Format(LocalizationHelper.Get("S.Options.Upload.Imgur.Expired"), UserSettings.All.ImgurExpireDate.Value.ToLocalTime().ToString("g", CultureInfo.CurrentUICulture)) :
+                    string.Format(LocalizationHelper.Get("S.Options.Upload.Imgur.Valid"), UserSettings.All.ImgurExpireDate.Value.ToLocalTime().ToString("g", CultureInfo.CurrentUICulture));
         }
 
         private async void UpdateAlbumList(bool offline = false)
@@ -1264,11 +1226,11 @@ namespace ScreenToGif.Windows
                 list = new List<ImgurAlbumData>();
 
                 if (!offline)
-                    StatusBand.Error(LocalizationHelper.Get("S.Upload.Imgur.Error.AlbumLoad"));
+                    StatusBand.Error(LocalizationHelper.Get("S.Options.Upload.Imgur.Error.AlbumLoad"));
             }
 
             if (!offline || list.All(a => a.Id != "♥♦♣♠"))
-                list.Insert(0, new ImgurAlbumData { Id = "♥♦♣♠", Title = LocalizationHelper.Get("S.Upload.Imgur.AskMe") });
+                list.Insert(0, new ImgurAlbumData { Id = "♥♦♣♠", Title = LocalizationHelper.Get("S.Options.Upload.Imgur.AskMe") });
 
             ImgurAlbumComboBox.ItemsSource = list;
 
@@ -1295,6 +1257,10 @@ namespace ScreenToGif.Windows
                 return;
             }
 
+#if UWP
+            StatusBand.Warning(LocalizationHelper.Get("S.Options.Extras.DownloadRestriction"));
+            return;
+#else
             #region Save as
 
             var output = UserSettings.All.FfmpegLocation ?? "";
@@ -1342,7 +1308,7 @@ namespace ScreenToGif.Windows
             ExtrasGrid.IsEnabled = false;
             Cursor = Cursors.AppStarting;
             FfmpegImageCard.Status = ExtrasStatus.Processing;
-            FfmpegImageCard.Description = FindResource("Extras.Downloading") as string;
+            FfmpegImageCard.Description = LocalizationHelper.Get("S.Options.Extras.Downloading");
 
             try
             {
@@ -1365,7 +1331,7 @@ namespace ScreenToGif.Windows
             catch (Exception ex)
             {
                 LogWriter.Log(ex, "Error while downloading FFmpeg");
-                ErrorDialog.Ok("Downloading FFmpeg", "It was not possible to download FFmpeg", ex.Message, ex);
+                ExceptionDialog.Ok(ex, "Downloading FFmpeg", "It was not possible to download FFmpeg", ex.Message);
             }
             finally
             {
@@ -1375,6 +1341,7 @@ namespace ScreenToGif.Windows
             }
 
             #endregion
+#endif
         }
 
         private async void GifskiImageCard_Click(object sender, RoutedEventArgs e)
@@ -1387,6 +1354,10 @@ namespace ScreenToGif.Windows
                 return;
             }
 
+#if UWP
+            StatusBand.Warning(LocalizationHelper.Get("S.Options.Extras.DownloadRestriction"));
+            return;
+#else
             #region Save as
 
             var output = UserSettings.All.GifskiLocation ?? "";
@@ -1434,7 +1405,7 @@ namespace ScreenToGif.Windows
             ExtrasGrid.IsEnabled = false;
             Cursor = Cursors.AppStarting;
             GifskiImageCard.Status = ExtrasStatus.Processing;
-            GifskiImageCard.Description = FindResource("Extras.Downloading") as string;
+            GifskiImageCard.Description = LocalizationHelper.Get("S.Options.Extras.Downloading");
 
             try
             {
@@ -1468,6 +1439,102 @@ namespace ScreenToGif.Windows
             }
 
             #endregion
+#endif
+        }
+
+        private async void SharpDxImageCard_Click(object sender, RoutedEventArgs e)
+        {
+            CheckTools();
+
+            if (!string.IsNullOrWhiteSpace(UserSettings.All.SharpDxLocationFolder) && File.Exists(Path.Combine(UserSettings.All.SharpDxLocationFolder, "SharpDX.dll")))
+            {
+                Native.ShowFileProperties(Path.GetFullPath(Path.Combine(UserSettings.All.SharpDxLocationFolder, "SharpDX.dll")));
+                return;
+            }
+
+#if UWP
+            StatusBand.Warning(LocalizationHelper.Get("S.Options.Extras.DownloadRestriction"));
+            return;
+#else
+            #region Save as
+
+            var output = UserSettings.All.SharpDxLocationFolder ?? "";
+
+            if (output.ToCharArray().Any(x => Path.GetInvalidPathChars().Contains(x)))
+                output = "";
+
+            //It's only a relative path if not null/empty and there's no root folder declared.
+            var isRelative = !string.IsNullOrWhiteSpace(output) && !Path.IsPathRooted(output);
+            var notAlt = !string.IsNullOrWhiteSpace(output) && output.Contains(Path.DirectorySeparatorChar);
+
+            var directory = !string.IsNullOrWhiteSpace(output) ? Path.GetDirectoryName(output) : "";
+            var initial = Directory.Exists(directory) ? directory : Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+
+            var fbd = new System.Windows.Forms.FolderBrowserDialog
+            {
+                Description = LocalizationHelper.Get("S.Options.Extras.SharpDxLocation.Select"),
+                SelectedPath = isRelative ? Path.GetFullPath(initial) : initial
+            };
+            var result = fbd.ShowDialog();
+
+            if (result != DialogResultWinForms.OK)
+                return;
+
+            UserSettings.All.SharpDxLocationFolder = fbd.SelectedPath;
+
+            //Converts to a relative path again.
+            if (isRelative && !string.IsNullOrWhiteSpace(UserSettings.All.SharpDxLocationFolder))
+            {
+                var selected = new Uri(UserSettings.All.SharpDxLocationFolder);
+                var baseFolder = new Uri(AppDomain.CurrentDomain.BaseDirectory);
+                var relativeFolder = Uri.UnescapeDataString(baseFolder.MakeRelativeUri(selected).ToString());
+
+                //This app even returns you the correct slashes/backslashes.
+                UserSettings.All.SharpDxLocationFolder = notAlt ? relativeFolder : relativeFolder.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            }
+
+            #endregion
+
+            #region Download
+
+            ExtrasGrid.IsEnabled = false;
+            Cursor = Cursors.AppStarting;
+            SharpDxImageCard.Status = ExtrasStatus.Processing;
+            SharpDxImageCard.Description = LocalizationHelper.Get("S.Options.Extras.Downloading");
+
+            try
+            {
+                //Save to a temp folder.
+                var temp = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
+
+                using (var client = new WebClient { Proxy = WebHelper.GetProxy() })
+                    await client.DownloadFileTaskAsync(new Uri("https://github.com/NickeManarin/ScreenToGif-Website/raw/master/downloads/SharpDx.zip", UriKind.Absolute), temp);
+                
+                using (var zip = ZipFile.Open(temp, ZipArchiveMode.Read))
+                {
+                    foreach (var entry in zip.Entries)
+                    {
+                        if (File.Exists(Path.Combine(UserSettings.All.SharpDxLocationFolder, entry.Name)))
+                            File.Delete(Path.Combine(UserSettings.All.SharpDxLocationFolder, entry.Name));
+
+                        entry?.ExtractToFile(Path.Combine(UserSettings.All.SharpDxLocationFolder, entry.Name), true);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogWriter.Log(ex, "Error while downloading SharpDx");
+                ErrorDialog.Ok("Downloading SharpDx", "It was not possible to download SharpDx", ex.Message, ex);
+            }
+            finally
+            {
+                ExtrasGrid.IsEnabled = true;
+                Cursor = Cursors.Arrow;
+                CheckTools();
+            }
+
+            #endregion
+#endif
         }
 
         private void LocationTextBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
@@ -1486,14 +1553,19 @@ namespace ScreenToGif.Windows
             var isRelative = !string.IsNullOrWhiteSpace(output) && !Path.IsPathRooted(output);
             var notAlt = !string.IsNullOrWhiteSpace(output) && (UserSettings.All.FfmpegLocation ?? "").Contains(Path.DirectorySeparatorChar);
 
+            //Gets the current directory folder, where the file is located. If empty, it means that the path is relative.
             var directory = !string.IsNullOrWhiteSpace(output) ? Path.GetDirectoryName(output) : "";
+
+            if (!string.IsNullOrWhiteSpace(output) && string.IsNullOrWhiteSpace(directory))
+                directory = AppDomain.CurrentDomain.BaseDirectory;
+
             var initial = Directory.Exists(directory) ? directory : Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
             var ofd = new OpenFileDialog
             {
                 FileName = "ffmpeg",
                 Filter = "FFmpeg executable (*.exe)|*.exe", //TODO: Localize.
-                Title = LocalizationHelper.Get("Extras.FfmpegLocation.Select"),
+                Title = LocalizationHelper.Get("S.Options.Extras.FfmpegLocation.Select"),
                 InitialDirectory = isRelative ? Path.GetFullPath(initial) : initial,
                 DefaultExt = ".exe"
             };
@@ -1529,14 +1601,19 @@ namespace ScreenToGif.Windows
             var isRelative = !string.IsNullOrWhiteSpace(output) && !Path.IsPathRooted(output);
             var notAlt = !string.IsNullOrWhiteSpace(output) && (UserSettings.All.GifskiLocation ?? "").Contains(Path.DirectorySeparatorChar);
 
+            //Gets the current directory folder, where the file is located. If empty, it means that the path is relative.
             var directory = !string.IsNullOrWhiteSpace(output) ? Path.GetDirectoryName(output) : "";
+
+            if (!string.IsNullOrWhiteSpace(output) && string.IsNullOrWhiteSpace(directory))
+                directory = AppDomain.CurrentDomain.BaseDirectory;
+
             var initial = Directory.Exists(directory) ? directory : Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 
             var ofd = new OpenFileDialog
             {
                 FileName = "gifski",
                 Filter = "Gifski library (*.dll)|*.dll", //TODO: Localize.
-                Title = LocalizationHelper.Get("Extras.GifskiLocation.Select"),
+                Title = LocalizationHelper.Get("S.Options.Extras.GifskiLocation.Select"),
                 InitialDirectory = isRelative ? Path.GetFullPath(initial) : initial,
                 DefaultExt = ".dll"
             };
@@ -1550,12 +1627,57 @@ namespace ScreenToGif.Windows
             //Converts to a relative path again.
             if (isRelative && !string.IsNullOrWhiteSpace(UserSettings.All.GifskiLocation))
             {
-                var selected = new Uri(UserSettings.All.FfmpegLocation);
+                var selected = new Uri(UserSettings.All.GifskiLocation);
                 var baseFolder = new Uri(AppDomain.CurrentDomain.BaseDirectory);
                 var relativeFolder = Uri.UnescapeDataString(baseFolder.MakeRelativeUri(selected).ToString());
 
                 //This app even returns you the correct slashes/backslashes.
                 UserSettings.All.GifskiLocation = notAlt ? relativeFolder : relativeFolder.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            }
+
+            CheckTools();
+        }
+
+        private void SelectSharpDx_Click(object sender, RoutedEventArgs e)
+        {
+            var output = UserSettings.All.SharpDxLocationFolder ?? "";
+
+            if (output.ToCharArray().Any(x => Path.GetInvalidPathChars().Contains(x)))
+                output = "";
+
+            //It's only a relative path if not null/empty and there's no root folder declared.
+            var isRelative = !string.IsNullOrWhiteSpace(output) && !Path.IsPathRooted(output);
+            var notAlt = !string.IsNullOrWhiteSpace(output) && (UserSettings.All.SharpDxLocationFolder ?? "").Contains(Path.DirectorySeparatorChar);
+
+            //Gets the current directory folder, where the file is located. If empty, it means that the path is relative.
+            var directory = !string.IsNullOrWhiteSpace(output) ? Path.GetDirectoryName(output) : "";
+
+            if (!string.IsNullOrWhiteSpace(output) && string.IsNullOrWhiteSpace(directory))
+                directory = AppDomain.CurrentDomain.BaseDirectory;
+
+            var initial = Directory.Exists(directory) ? directory : Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+
+            var fbd = new System.Windows.Forms.FolderBrowserDialog
+            {
+                Description = LocalizationHelper.Get("S.Options.Extras.SharpDxLocation.Select"),
+                SelectedPath = isRelative ? Path.GetFullPath(initial) : initial
+            };
+            var result = fbd.ShowDialog();
+
+            if (result != DialogResultWinForms.OK) 
+                return;
+
+            UserSettings.All.SharpDxLocationFolder = fbd.SelectedPath;
+
+            //Converts to a relative path again.
+            if (isRelative && !string.IsNullOrWhiteSpace(UserSettings.All.SharpDxLocationFolder))
+            {
+                var selected = new Uri(UserSettings.All.SharpDxLocationFolder);
+                var baseFolder = new Uri(AppDomain.CurrentDomain.BaseDirectory);
+                var relativeFolder = Uri.UnescapeDataString(baseFolder.MakeRelativeUri(selected).ToString());
+
+                //This app even returns you the correct slashes/backslashes.
+                UserSettings.All.SharpDxLocationFolder = notAlt ? relativeFolder : relativeFolder.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
             }
 
             CheckTools();
@@ -1569,7 +1691,7 @@ namespace ScreenToGif.Windows
             }
             catch (Exception ex)
             {
-                LogWriter.Log(ex, "Erro while trying to navigate to the license website.");
+                LogWriter.Log(ex, "Error while trying to navigate to the license website.");
             }
         }
 
@@ -1580,37 +1702,56 @@ namespace ScreenToGif.Windows
 
             try
             {
-                if (Util.Other.IsFfmpegPresent())
+                if (Util.Other.IsFfmpegPresent(true))
                 {
                     var info = new FileInfo(UserSettings.All.FfmpegLocation);
                     info.Refresh();
 
                     FfmpegImageCard.Status = ExtrasStatus.Ready;
-                    FfmpegImageCard.Description = string.Format(TryFindResource("Extras.Ready") as string ?? "{0}", Humanizer.BytesToString(info.Length));
+                    FfmpegImageCard.Description = string.Format(LocalizationHelper.Get("S.Options.Extras.Ready", "{0}"), Humanizer.BytesToString(info.Length));
                 }
                 else
                 {
                     FfmpegImageCard.Status = ExtrasStatus.Available;
-                    FfmpegImageCard.Description = string.Format(TryFindResource("Extras.Download") as string ?? "{0}", "~ 43,7 MB");
+                    FfmpegImageCard.Description = string.Format(LocalizationHelper.Get("S.Options.Extras.Download", "{0}"), "~ 43,7 MB");
                 }
 
-                if (Util.Other.IsGifskiPresent())
+                if (Util.Other.IsGifskiPresent(true))
                 {
                     var info = new FileInfo(UserSettings.All.GifskiLocation);
                     info.Refresh();
 
                     GifskiImageCard.Status = ExtrasStatus.Ready;
-                    GifskiImageCard.Description = string.Format(TryFindResource("Extras.Ready") as string ?? "{0}", Humanizer.BytesToString(info.Length));
+                    GifskiImageCard.Description = string.Format(LocalizationHelper.Get("S.Options.Extras.Ready", "{0}"), Humanizer.BytesToString(info.Length));
                 }
                 else
                 {
                     GifskiImageCard.Status = ExtrasStatus.Available;
-                    GifskiImageCard.Description = string.Format(TryFindResource("Extras.Download") as string ?? "{0}", "~ 1 MB");
+                    GifskiImageCard.Description = string.Format(LocalizationHelper.Get("S.Options.Extras.Download", "{0}"), "~ 1 MB");
+                }
+
+                if (Util.Other.IsSharpDxPresent(true))
+                {
+                    var info1 = new FileInfo(Path.Combine(UserSettings.All.SharpDxLocationFolder, "SharpDX.dll"));
+                    info1.Refresh();
+                    var info2 = new FileInfo(Path.Combine(UserSettings.All.SharpDxLocationFolder, "SharpDX.DXGI.dll"));
+                    info2.Refresh();
+                    var info3 = new FileInfo(Path.Combine(UserSettings.All.SharpDxLocationFolder, "SharpDX.Direct3D11.dll"));
+                    info3.Refresh();
+
+                    SharpDxImageCard.Status = ExtrasStatus.Ready;
+                    SharpDxImageCard.Description = string.Format(LocalizationHelper.Get("S.Options.Extras.Ready", "{0}"), Humanizer.BytesToString(info1.Length + info2.Length + info3.Length));
+                }
+                else
+                {
+                    SharpDxImageCard.Status = ExtrasStatus.Available;
+                    SharpDxImageCard.Description = string.Format(LocalizationHelper.Get("S.Options.Extras.Download", "{0}"), "~ 242 KB");
                 }
             }
             catch (Exception ex)
             {
                 LogWriter.Log(ex, "Checking the existance of external tools.");
+                StatusBand.Error("It was not possible to check the existence of the external tools.");
             }
         }
 
@@ -1627,8 +1768,7 @@ namespace ScreenToGif.Windows
             catch (Exception ex)
             {
                 LogWriter.Log(ex, "Error • Openning the Donation website");
-
-                ErrorDialog.Ok(FindResource("Title.Options") as string, "Error openning the donation website", ex.Message, ex);
+                ErrorDialog.Ok(Title, "Error openning the donation website", ex.Message, ex);
             }
         }
 
@@ -1642,7 +1782,7 @@ namespace ScreenToGif.Windows
             {
                 LogWriter.Log(ex, "Error • Openning the Donation website");
 
-                ErrorDialog.Ok(FindResource("Title.Options") as string, "Error openning the donation website", ex.Message, ex);
+                ErrorDialog.Ok(Title, "Error openning the donation website", ex.Message, ex);
             }
         }
 
@@ -1650,9 +1790,7 @@ namespace ScreenToGif.Windows
         {
             try
             {
-                var label = CurrencyComboBox.SelectedValue as Label;
-
-                var currency = label?.Content.ToString().Substring(0, 3) ?? "USD";
+                var currency = CurrencyComboBox.Text.Substring(0, 3);
 
                 Process.Start($"https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=JCY2BGLULSWVJ&lc=US&item_name=ScreenToGif&item_number=screentogif&currency_code={currency}&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted");
             }
@@ -1660,11 +1798,11 @@ namespace ScreenToGif.Windows
             {
                 LogWriter.Log(ex, "Error • Openning the Donation website");
 
-                ErrorDialog.Ok(FindResource("Title.Options") as string, "Error openning the donation website", ex.Message, ex);
+                ErrorDialog.Ok(LocalizationHelper.Get("S.Options.Title"), "Error openning the donation website", ex.Message, ex);
             }
         }
 
-        private void PatreonHyperlink_Click(object sender, RoutedEventArgs e)
+        private void PatreonButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -1673,12 +1811,64 @@ namespace ScreenToGif.Windows
             catch (Exception ex)
             {
                 LogWriter.Log(ex, "Error • Openning the Patreon website");
+                ErrorDialog.Ok(Title, "Error openning the Patreon website", ex.Message, ex);
+            }
+        }
+        
+        private void FlattrButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Process.Start("https://flattr.com/@NickeManarin/domain/screentogif.com");
+            }
+            catch (Exception ex)
+            {
+                LogWriter.Log(ex, "Error • Openning the Flattr website");
 
-                ErrorDialog.Ok(FindResource("Title.Options") as string, "Error openning the patreon website", ex.Message, ex);
+                ErrorDialog.Ok(LocalizationHelper.Get("S.Options.Title"), "Error openning the Flattr website", ex.Message, ex);
             }
         }
 
-        private void BitcoinCashHyperlink_Click(object sender, RoutedEventArgs e)
+        private void SteamButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Process.Start("http://steamcommunity.com/id/nickesm/wishlist");
+            }
+            catch (Exception ex)
+            {
+                LogWriter.Log(ex, "Error • Openning the Steam website");
+                ErrorDialog.Ok(Title, "Error openning the Steam website", ex.Message, ex);
+            }
+        }
+        
+        private void GogButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Process.Start("https://www.gog.com/u/Nickesm/wishlist");
+            }
+            catch (Exception ex)
+            {
+                LogWriter.Log(ex, "Error • Openning the GOG website");
+                ErrorDialog.Ok(Title, "Error openning the GOG website", ex.Message, ex);
+            }
+        }     
+        
+        private void KofiButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Process.Start("https://ko-fi.com/nickemanarin");
+            }
+            catch (Exception ex)
+            {
+                LogWriter.Log(ex, "Error • Openning the Ko-fi website");
+                ErrorDialog.Ok(Title, "Error openning the Ko-fi website", ex.Message, ex);
+            }
+        }
+
+        private void BitcoinCashCopy_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.Clipboard.SetText("1HN81cAwDo16tRtiYfkzvzFqikQUimM3S8");
         }
@@ -1688,21 +1878,7 @@ namespace ScreenToGif.Windows
             System.Windows.Clipboard.SetText("44yC9CkwHVfKPsKxg5RcA67GZEqiQH6QoBYtRKwkhDaE3tvRpiw1E5i6GShZYNsDq9eCtHnq49SrKjF4DG7NwjqWMoMueD4");
         }
 
-        private void SteamHyperlink_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                Process.Start("http://steamcommunity.com/id/nickesm/wishlist");
-            }
-            catch (Exception ex)
-            {
-                LogWriter.Log(ex, "Error • Openning the Steam website");
-
-                ErrorDialog.Ok(FindResource("Title.Options") as string, "Error openning the steam website", ex.Message, ex);
-            }
-        }
-
-        private void ExtraSupportHyperlink_Click(object sender, RoutedEventArgs e)
+        private void SupportButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -1711,8 +1887,7 @@ namespace ScreenToGif.Windows
             catch (Exception ex)
             {
                 LogWriter.Log(ex, "Error • Openning the donation website");
-
-                ErrorDialog.Ok(FindResource("Title.Options") as string, "Error openning the donation website", ex.Message, ex);
+                ErrorDialog.Ok(Title, "Error openning the donation website", ex.Message, ex);
             }
         }
 
@@ -1738,7 +1913,15 @@ namespace ScreenToGif.Windows
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            ProxyPasswordBox.Password = WebHelper.Unprotect(UserSettings.All.ProxyPassword);
+            try
+            {
+                ProxyPasswordBox.Password = WebHelper.Unprotect(UserSettings.All.ProxyPassword);
+            }
+            catch (Exception ex)
+            {
+                StatusBand.Warning("It was not possible to correctly load your proxy password. This usually happens when sharing the app settings with different computers.");
+                LogWriter.Log(ex, "Unprotect data");
+            }
 
             UpdateImgurStatus();
             UpdateAlbumList(true);
@@ -1751,6 +1934,34 @@ namespace ScreenToGif.Windows
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            #region Validation
+
+            if (UserSettings.All.CursorFollowing && UserSettings.All.FollowShortcut == Key.None)
+            {
+                Dialog.Ok(LocalizationHelper.Get("S.Options.Title"), LocalizationHelper.Get("S.Options.Warning.Follow.Header"),
+                    LocalizationHelper.Get("S.Options.Warning.Follow.Message"), Icons.Warning);
+
+                ShortcutsRadio.IsChecked = true;
+                FollowKeyBox.Focus();
+
+                e.Cancel = true;
+                return;
+            }
+
+            if (UserSettings.All.UseDesktopDuplication && !Util.Other.IsSharpDxPresent())
+            {
+                Dialog.Ok(LocalizationHelper.Get("S.Options.Title"), LocalizationHelper.Get("S.Options.Warning.DesktopDuplication.Header"),
+                    LocalizationHelper.Get("S.Options.Warning.DesktopDuplication.Message"), Icons.Warning);
+
+                ExtrasRadioButton.IsChecked = true;
+                SharpDxLocationTextBox.Focus();
+
+                e.Cancel = true;
+                return;
+            }
+
+            #endregion
+
             Global.IgnoreHotKeys = false;
 
             RenderOptions.ProcessRenderMode = UserSettings.All.DisableHardwareAcceleration ? RenderMode.SoftwareOnly : RenderMode.Default;
@@ -1771,7 +1982,7 @@ namespace ScreenToGif.Windows
 
         public void NotificationUpdated()
         {
-            if (!string.IsNullOrWhiteSpace(UserSettings.All.TemporaryFolder) && Global.AvailableDiskSpace < 2000000000)
+            if (!string.IsNullOrWhiteSpace(UserSettings.All.TemporaryFolderResolved) && Global.AvailableDiskSpace < 2000000000)
                 LowSpaceTextBlock.Visibility = Visibility.Visible;
             else
                 LowSpaceTextBlock.Visibility = Visibility.Collapsed;
@@ -1779,7 +1990,8 @@ namespace ScreenToGif.Windows
 
         internal void SelectTab(int index)
         {
-            if (index <= -1 || index >= OptionsStackPanel.Children.Count - 1) return;
+            if (index <= -1 || index >= OptionsStackPanel.Children.Count - 1) 
+                return;
 
             if (OptionsStackPanel.Children[index] is RadioButton radio)
                 radio.IsChecked = true;

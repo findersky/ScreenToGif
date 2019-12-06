@@ -128,7 +128,10 @@ namespace ScreenToGif.Util
         {
             try
             {
-                var folder = Path.Combine(UserSettings.All.TemporaryFolder, "ScreenToGif", "Localization");
+                if (string.IsNullOrWhiteSpace(UserSettings.All.TemporaryFolderResolved))
+                    return;
+
+                var folder = Path.Combine(UserSettings.All.TemporaryFolderResolved, "ScreenToGif", "Localization");
                 var file = Path.Combine(folder, $"StringResources.{culture}.new.xaml");
 
                 Directory.CreateDirectory(folder);
@@ -459,6 +462,18 @@ namespace ScreenToGif.Util
         public static string GetWithFormat(string key, string defaultValue, params object[] values)
         {
             return string.Format(Thread.CurrentThread.CurrentUICulture, Application.Current.TryFindResource(key) as string ?? defaultValue, values);
+        }
+
+        /// <summary>
+        /// Gets a resource as string.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="key">The key of the string resource.</param>
+        /// <param name="values">The possible values that composite the key name.</param>
+        /// <returns>A string resource, usually a localized string.</returns>
+        public static string GetWithIndex(int index, string key, params string[] values)
+        {
+            return Application.Current.TryFindResource(key + values[index]) as string;
         }
     }
 }

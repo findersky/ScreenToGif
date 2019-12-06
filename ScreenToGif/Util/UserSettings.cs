@@ -2,6 +2,7 @@
 using System.Collections;
 using System.ComponentModel;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -31,7 +32,7 @@ namespace ScreenToGif.Util
 
         public static UserSettings All { get; } = new UserSettings();
 
-        public string Version => Assembly.GetEntryAssembly().GetName().Version?.ToStringShort() ?? "0.0";
+        public string Version => Assembly.GetEntryAssembly()?.GetName().Version?.ToStringShort() ?? "0.0";
 
         #endregion
 
@@ -268,6 +269,7 @@ namespace ScreenToGif.Util
 
         #endregion
 
+
         #region Startup
 
         public double StartupTop
@@ -418,92 +420,62 @@ namespace ScreenToGif.Util
 
         #endregion
 
+        #region Insert
+
+        public Color InsertFillColor
+        {
+            get => (Color)GetValue();
+            set => SetValue(value);
+        }
+
+        public int LatestFpsImport
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        #endregion
+
+        #region Video source
+
+        public int VideoImporter
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+        
+        #endregion
+
+        #region Feedback
+
+        public string LatestFeedbackEmail
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        #endregion
+
+
         #region Options • Application
+        
+        public bool StartMinimized
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
 
         /// <summary>
         /// The homepage of the app:
-        /// 0 - StartUp window.
+        /// 0 - Startup window.
         /// 1 - Recorder window.
         /// 2 - Webcam window.
         /// 3 - Board window.
         /// 4 - Editor window.
-        /// 5 - Open minimized.
         /// </summary>
         public int StartUp
         {
             get => (int)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool ShowCursor
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool DetectMouseClicks
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool UsePreStart
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public int PreStartValue
-        {
-            get => (int)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool SnapshotMode
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public int SnapshotDefaultDelay
-        {
-            get => (int)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool FixedFrameRate
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool AsyncRecording
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool NewRecorder
-        {
-            get => (bool)GetValue(nameof(NewRecorder), true);
-            set => SetValue(value);
-        }
-
-        public bool Magnifier
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool ShowNotificationIcon
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool KeepOpen
-        {
-            get => (bool)GetValue();
             set => SetValue(value);
         }
 
@@ -549,15 +521,184 @@ namespace ScreenToGif.Util
             set => SetValue(value);
         }
 
-        public bool CheckForUpdates 
+        public bool CheckForUpdates
         {
             get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool ShowNotificationIcon
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool KeepOpen
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        /// <summary>
+        /// 0: Do nothing.
+        /// 1: Open a new window.
+        /// 2: Toggle Minimize/Maximize all windows.
+        /// 3: Minimize all windows.
+        /// 4: Maximize all windows.
+        /// </summary>
+        public int LeftClickAction
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        /// <summary>
+        /// 0: None.
+        /// 1: Startup
+        /// 2: Screen recorder
+        /// 3: Webcam recorder
+        /// 4: Board recorder
+        /// 5: Editor
+        /// </summary>
+        public int LeftOpenWindow
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public int DoubleLeftClickAction
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+        
+        public int DoubleLeftOpenWindow
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public int MiddleClickAction
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public int MiddleOpenWindow
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        #endregion
+
+        #region Options • Recorder
+
+        public bool NewRecorder
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool UseDesktopDuplication
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool UseMemoryCache
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public CompressionLevel CaptureCompression
+        {
+            get => (CompressionLevel)GetValue();
+            set => SetValue(value);
+        }
+
+        public int MemoryCacheSize
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+        
+        public bool ShowCursor
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool UsePreStart
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public int PreStartValue
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool SnapshotMode
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public int SnapshotDefaultDelay
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool FixedFrameRate
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool AsyncRecording
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool Magnifier
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool CursorFollowing
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public int FollowBuffer
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public int FollowBufferInvisible
+        {
+            get => (int)GetValue();
             set => SetValue(value);
         }
 
         #endregion
 
         #region Options • Interface
+
+        public AppTheme MainTheme
+        {
+            get => (AppTheme)GetValue();
+            set => SetValue(value);
+        }
 
         public Color GridColor1
         {
@@ -645,7 +786,7 @@ namespace ScreenToGif.Util
 
         #endregion
 
-        #region Options • Default Effects
+        #region Options • Automated Tasks
 
         public ArrayList AutomatedTasksList
         {
@@ -766,6 +907,24 @@ namespace ScreenToGif.Util
             set => SetValue(value);
         }
 
+        public Key FollowShortcut
+        {
+            get => (Key)GetValue();
+            set => SetValue(value);
+        }
+
+        public ModifierKeys FollowModifiers
+        {
+            get => (ModifierKeys)GetValue();
+            set => SetValue(value);
+        }
+
+        public ModifierKeys DisableFollowModifiers
+        {
+            get => (ModifierKeys)GetValue();
+            set => SetValue(value);
+        }
+
         #endregion
 
         #region Options • Language
@@ -792,6 +951,17 @@ namespace ScreenToGif.Util
             set => SetValue(value);
         }
 
+        public string TemporaryFolderResolved
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(TemporaryFolder))
+                    TemporaryFolder = "%temp%";
+
+                return Environment.ExpandEnvironmentVariables(TemporaryFolder);
+            }
+        }
+
         public bool AutomaticCleanUp
         {
             get => (bool)GetValue();
@@ -811,7 +981,7 @@ namespace ScreenToGif.Util
         //Proxy
         public ProxyType ProxyMode
         {
-            get => (ProxyType)GetValue(defaultValue:ProxyType.Disabled);
+            get => (ProxyType)GetValue(defaultValue: ProxyType.Disabled);
             set => SetValue(value);
         }
 
@@ -930,7 +1100,14 @@ namespace ScreenToGif.Util
             set => SetValue(value);
         }
 
+        public string SharpDxLocationFolder
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
         #endregion
+
 
         #region Editor
 
@@ -970,6 +1147,12 @@ namespace ScreenToGif.Util
             set => SetValue(value);
         }
 
+        public bool LoopedPlayback
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
         #endregion
 
         #region Editor • New Animation
@@ -989,6 +1172,617 @@ namespace ScreenToGif.Util
         public Color NewAnimationColor
         {
             get => (Color)GetValue();
+            set => SetValue(value);
+        }
+
+        #endregion
+
+        #region Editor • Save As
+
+        //Type and encoder.
+        public bool IsSaveTypeExpanded
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public Export SaveType
+        {
+            get => (Export)GetValue();
+            set => SetValue(value);
+        }
+
+        public GifEncoderType GifEncoder
+        {
+            get => (GifEncoderType)GetValue();
+            set => SetValue(value);
+        }
+
+        public ApngEncoderType ApngEncoder
+        {
+            get => (ApngEncoderType)GetValue();
+            set => SetValue(value);
+        }
+
+        public VideoEncoderType VideoEncoder
+        {
+            get => (VideoEncoderType)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool IsGifOptionsExpanded
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool IsApngOptionsExpanded
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool IsVideoOptionsExpanded
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool IsPsdOptionsExpanded
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool IsProjectOptionsExpanded
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool IsSaveOptionsExpanded
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        //Gif.
+        public int Quality
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public int GifskiQuality
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public int MaximumColors
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool Looped
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool RepeatForever
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public int RepeatCount
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public ColorQuantizationType ColorQuantization
+        {
+            get => (ColorQuantizationType)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool DetectUnchanged
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool PaintTransparent
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public Color ChromaKey
+        {
+            get => (Color)GetValue();
+            set => SetValue(value);
+        }
+
+        public string ExtraParametersGif
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestOutputFolder
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestFilename
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestExtension
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        //Gif > Save options.
+        public bool PickLocation
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool OverwriteOnSave
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool SaveAsProjectToo
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool UploadFile
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public UploadService LatestUploadService
+        {
+            get => (UploadService)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool SaveToClipboard
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public CopyType LatestCopyType
+        {
+            get => (CopyType)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool ExecuteCustomCommands
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public string CustomCommands
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        //Apng.
+        public bool DetectUnchangedApng
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool PaintTransparentApng
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool LoopedApng
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public int RepeatCountApng
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool RepeatForeverApng
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public string ExtraParametersApngFFmpeg
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestApngOutputFolder
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestApngFilename
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestApngExtension
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        //Apng > Save options.
+        public bool PickLocationApng
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool OverwriteOnSaveApng
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool SaveAsProjectTooApng
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool SaveToClipboardApng
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public CopyType LatestCopyTypeApng
+        {
+            get => (CopyType)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool ExecuteCustomCommandsApng
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public string CustomCommandsApng
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        //Video
+        public int AviQuality
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool FlipVideo
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public int OutputFramerate
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public ArrayList FfmpegPresets
+        {
+            get => (ArrayList)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestVideoOutputFolder
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestVideoFilename
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestVideoExtension
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        //Video > Save options.
+        public bool PickLocationVideo
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool OverwriteOnSaveVideo
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool SaveAsProjectTooVideo
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool SaveToClipboardVideo
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public CopyType LatestCopyTypeVideo
+        {
+            get => (CopyType)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool ExecuteCustomCommandsVideo
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public string CustomCommandsVideo
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        //Project.
+        public CompressionLevel CompressionLevelProject
+        {
+            get => (CompressionLevel)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestProjectOutputFolder
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestProjectFilename
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestProjectExtension
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        //Project > Save options.
+        public bool OverwriteOnSaveProject
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool SaveToClipboardProject
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public CopyType LatestCopyTypeProject
+        {
+            get => (CopyType)GetValue();
+            set => SetValue(value);
+        }
+
+        //Images.
+        public bool ZipImages
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestImageOutputFolder
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestImageFilename
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestImageExtension
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        //Images > Save options.
+        public bool OverwriteOnSaveImages
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        //Photoshop.
+        public bool CompressImage
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool SaveTimeline
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool MaximizeCompatibility
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestPhotoshopOutputFolder
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestPhotoshopFilename
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string LatestPhotoshopExtension
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        //Photoshop > Save options.
+        public bool PickLocationPhotoshop
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool OverwriteOnSavePhotoshop
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool SaveAsProjectTooPhotoshop
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool SaveToClipboardPhotoshop
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public CopyType LatestCopyTypePhotoshop
+        {
+            get => (CopyType)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool ExecuteCustomCommandsPhotoshop
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        public string CustomCommandsPhotoshop
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        #endregion
+
+        #region Editor • Reduce Frame Count 
+
+        public int ReduceFactor
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public int ReduceCount
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        #endregion
+
+        #region Editor • Remove Duplicates
+
+        public double DuplicatesSimilarity
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        public DuplicatesRemovalType DuplicatesRemoval
+        {
+            get => (DuplicatesRemovalType)GetValue();
+            set => SetValue(value);
+        }
+
+        public DuplicatesDelayType DuplicatesDelay
+        {
+            get => (DuplicatesDelayType)GetValue();
+            set => SetValue(value);
+        }
+
+        #endregion
+
+        #region Editor • Delay
+
+        public int OverrideDelay
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public int IncrementDecrementDelay
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public int ScaleDelay
+        {
+            get => (int)GetValue();
             set => SetValue(value);
         }
 
@@ -1216,6 +2010,12 @@ namespace ScreenToGif.Util
             set => SetValue(value);
         }
 
+        public double KeyStrokesMinHeight
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
         #endregion
 
         #region Editor • Free Text
@@ -1271,7 +2071,7 @@ namespace ScreenToGif.Util
             get => (string)GetValue();
             set => SetValue(value);
         }
-        
+
         public bool IsTitleFrameFontGroupExpanded
         {
             get => (bool)GetValue();
@@ -1398,23 +2198,35 @@ namespace ScreenToGif.Util
 
         #endregion
 
-        #region Editor • Mouse Clicks
+        #region Editor • Shapes
 
-        public Color MouseClicksColor
+        public double ShapesThickness
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        public Color ShapesOutlineColor
         {
             get => (Color)GetValue();
             set => SetValue(value);
         }
 
-        public double MouseClicksWidth
+        public double ShapesRadius
         {
             get => (double)GetValue();
             set => SetValue(value);
         }
 
-        public double MouseClicksHeight
+        public int ShapesDashes
         {
-            get => (double)GetValue();
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public Color ShapesFillColor
+        {
+            get => (Color)GetValue();
             set => SetValue(value);
         }
 
@@ -1476,6 +2288,12 @@ namespace ScreenToGif.Util
             set => SetValue(value);
         }
 
+        public int ProgressStartNumber
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
         public bool ProgressShowTotal
         {
             get => (bool)GetValue();
@@ -1483,6 +2301,12 @@ namespace ScreenToGif.Util
         }
 
         public string ProgressFormat
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public string ProgressDateFormat
         {
             get => (string)GetValue();
             set => SetValue(value);
@@ -1509,6 +2333,152 @@ namespace ScreenToGif.Util
         public Orientation ProgressOrientation
         {
             get => (Orientation)GetValue();
+            set => SetValue(value);
+        }
+
+        #endregion
+        
+        #region Editor • Mouse Clicks
+
+        public Color MouseClicksColor
+        {
+            get => (Color)GetValue();
+            set => SetValue(value);
+        }
+
+        public double MouseClicksWidth
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        public double MouseClicksHeight
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        #endregion
+        
+        #region Editor • Border
+
+        public Color BorderColor
+        {
+            get => (Color)GetValue();
+            set => SetValue(value);
+        }
+
+        public double BorderLeftThickness
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        public double BorderTopThickness
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        public double BorderRightThickness
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        public double BorderBottomThickness
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        #endregion
+
+        #region Editor • Shadow
+
+        public Color ShadowColor
+        {
+            get => (Color)GetValue();
+            set => SetValue(value);
+        }
+
+        public Color ShadowBackgroundColor
+        {
+            get => (Color)GetValue();
+            set => SetValue(value);
+        }
+
+        public double ShadowDirection
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        public double ShadowBlurRadius
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        public double ShadowOpacity
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        public double ShadowDepth
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        #endregion
+
+        #region Editor • Obfuscate
+
+        public int PixelSize
+        {
+            get => (int)GetValue();
+            set => SetValue(value);
+        }
+
+        public bool UseMedian
+        {
+            get => (bool)GetValue();
+            set => SetValue(value);
+        }
+
+        #endregion
+
+        #region Editor • Watermark
+
+        public string WatermarkFilePath
+        {
+            get => (string)GetValue();
+            set => SetValue(value);
+        }
+
+        public double WatermarkOpacity
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        public double WatermarkSize
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        public double WatermarkTop
+        {
+            get => (double)GetValue();
+            set => SetValue(value);
+        }
+
+        public double WatermarkLeft
+        {
+            get => (double)GetValue();
             set => SetValue(value);
         }
 
@@ -1612,699 +2582,47 @@ namespace ScreenToGif.Util
 
         #endregion
 
-        #region Insert
-
-        public Color InsertFillColor
-        {
-            get => (Color)GetValue();
-            set => SetValue(value);
-        }
-
-        public int LatestFpsImport
-        {
-            get => (int)GetValue();
-            set => SetValue(value);
-        }
-
-        #endregion
-        
-
-        #region Editor
-        
-        #region Save As
-
-        //Type and encoder.
-        public bool IsSaveTypeExpanded
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public Export SaveType
-        {
-            get => (Export)GetValue();
-            set => SetValue(value);
-        }
-
-        public GifEncoderType GifEncoder
-        {
-            get => (GifEncoderType)GetValue();
-            set => SetValue(value);
-        }
-
-        public VideoEncoderType VideoEncoder
-        {
-            get => (VideoEncoderType)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool IsGifOptionsExpanded
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool IsApngOptionsExpanded
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool IsVideoOptionsExpanded
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool IsSaveOptionsExpanded
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-        
-        //Gif.
-        public int Quality
-        {
-            get => (int)GetValue();
-            set => SetValue(value);
-        }
-
-        public int GifskiQuality
-        {
-            get => (int)GetValue();
-            set => SetValue(value);
-        }
-
-        public int MaximumColors
-        {
-            get => (int)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool Looped
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool RepeatForever
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public int RepeatCount
-        {
-            get => (int)GetValue();
-            set => SetValue(value);
-        }
-
-        public ColorQuantizationType ColorQuantization
-        {
-            get => (ColorQuantizationType)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool DetectUnchanged
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool PaintTransparent
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public Color ChromaKey
-        {
-            get => (Color)GetValue();
-            set => SetValue(value);
-        }
-
-        public string ExtraParametersGif
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        public string LatestOutputFolder
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        public string LatestFilename
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        public string LatestExtension
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        //Gif > Save options.
-        public bool PickLocation
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool OverwriteOnSave
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool SaveAsProjectToo
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool UploadFile
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public UploadService LatestUploadService
-        {
-            get => (UploadService)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool SaveToClipboard
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public CopyType LatestCopyType
-        {
-            get => (CopyType)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool ExecuteCustomCommands
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public string CustomCommands
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        //Apng.
-        public bool DetectUnchangedApng
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool PaintTransparentApng
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool LoopedApng
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public int RepeatCountApng
-        {
-            get => (int)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool RepeatForeverApng
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public string LatestApngOutputFolder
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        public string LatestApngFilename
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        public string LatestApngExtension
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        //Apng > Save options.
-        public bool PickLocationApng
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool OverwriteOnSaveApng
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool SaveAsProjectTooApng
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool SaveToClipboardApng
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public CopyType LatestCopyTypeApng
-        {
-            get => (CopyType)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool ExecuteCustomCommandsApng
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public string CustomCommandsApng
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        //Video.
-        public int AviQuality
-        {
-            get => (int)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool FlipVideo
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public int OutputFramerate
-        {
-            get => (int)GetValue();
-            set => SetValue(value);
-        }
-
-        public string ExtraParameters
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        public string LatestVideoOutputFolder
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        public string LatestVideoFilename
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        public string LatestVideoExtension
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        //Video > Save options.
-        public bool PickLocationVideo
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool OverwriteOnSaveVideo
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool SaveAsProjectTooVideo
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool SaveToClipboardVideo
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public CopyType LatestCopyTypeVideo
-        {
-            get => (CopyType)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool ExecuteCustomCommandsVideo
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public string CustomCommandsVideo
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        //Project.
-        public string LatestProjectOutputFolder
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        public string LatestProjectFilename
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        public string LatestProjectExtension
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        //Project > Save options.
-        public bool OverwriteOnSaveProject
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool SaveToClipboardProject
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public CopyType LatestCopyTypeProject
-        {
-            get => (CopyType)GetValue();
-            set => SetValue(value);
-        }
-
-        //Images.
-        public bool ZipImages
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public string LatestImageOutputFolder
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        public string LatestImageFilename
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        public string LatestImageExtension
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        //Images > Save options.
-        public bool OverwriteOnSaveImages
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        //Photoshop.
-        public string LatestPhotoshopOutputFolder
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        public string LatestPhotoshopFilename
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        public string LatestPhotoshopExtension
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        //Photoshop > Save options.
-        public bool PickLocationPhotoshop
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool OverwriteOnSavePhotoshop
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool SaveAsProjectTooPhotoshop
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool SaveToClipboardPhotoshop
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public CopyType LatestCopyTypePhotoshop
-        {
-            get => (CopyType)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool ExecuteCustomCommandsPhotoshop
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        public string CustomCommandsPhotoshop
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        #endregion
-        
-
-
-        #region Watermark
-
-        public string WatermarkFilePath
-        {
-            get => (string)GetValue();
-            set => SetValue(value);
-        }
-
-        public double WatermarkOpacity
-        {
-            get => (double)GetValue();
-            set => SetValue(value);
-        }
-
-        public double WatermarkSize
-        {
-            get => (double)GetValue();
-            set => SetValue(value);
-        }
-
-        public double WatermarkTop
-        {
-            get => (double)GetValue();
-            set => SetValue(value);
-        }
-
-        public double WatermarkLeft
-        {
-            get => (double)GetValue();
-            set => SetValue(value);
-        }
-
-        #endregion
-
-        #region Border
-
-        public Color BorderColor
-        {
-            get => (Color)GetValue();
-            set => SetValue(value);
-        }
-
-        public double BorderLeftThickness
-        {
-            get => (double)GetValue();
-            set => SetValue(value);
-        }
-
-        public double BorderTopThickness
-        {
-            get => (double)GetValue();
-            set => SetValue(value);
-        }
-
-        public double BorderRightThickness
-        {
-            get => (double)GetValue();
-            set => SetValue(value);
-        }
-
-        public double BorderBottomThickness
-        {
-            get => (double)GetValue();
-            set => SetValue(value);
-        }
-
-        #endregion
-
-        #region Obfuscate
-
-        public int PixelSize
-        {
-            get => (int)GetValue();
-            set => SetValue(value);
-        }
-
-        public bool UseMedian
-        {
-            get => (bool)GetValue();
-            set => SetValue(value);
-        }
-
-        #endregion
-
-        #region Reduce 
-
-        public int ReduceFactor
-        {
-            get => (int)GetValue();
-            set => SetValue(value);
-        }
-
-        public int ReduceCount
-        {
-            get => (int)GetValue();
-            set => SetValue(value);
-        }
-
-        #endregion
-
-        #region Remove Duplicates
-
-        public double DuplicatesSimilarity
-        {
-            get => (double)GetValue();
-            set => SetValue(value);
-        }
-
-        public DuplicatesRemovalType DuplicatesRemoval
-        {
-            get => (DuplicatesRemovalType)GetValue();
-            set => SetValue(value);
-        }
-
-        public DuplicatesDelayType DuplicatesDelay
-        {
-            get => (DuplicatesDelayType)GetValue();
-            set => SetValue(value);
-        }
-
-        #endregion
-
-        #region Delay
-
-        public int OverrideDelay
-        {
-            get => (int)GetValue();
-            set => SetValue(value);
-        }
-
-        public int IncrementDecrementDelay
-        {
-            get => (int)GetValue();
-            set => SetValue(value);
-        }
-
-        #endregion
-
-        #endregion
-
-
 
         #region Obsolete
+
+        public bool DetectMouseClicks
+        {
+            get => false;
+            set => SetValue(value);
+        }
 
         [Obsolete]
         public Color ClickColor
         {
-            get => (Color)(GetValue() ?? Color.FromRgb(0,0,0));
+            get => Color.FromRgb(0, 0, 0);
             set => SetValue(value);
         }
 
         [Obsolete]
         public bool FullScreenMode
         {
-            get => (bool)GetValue();
+            get => false;
             set => SetValue(value);
         }
 
         [Obsolete]
         public string ExtraParametersGifski
         {
-            get => (string)GetValue();
+            get => "";
             set => SetValue(value);
         }
 
         [Obsolete]
         public int LatestUploadIndex
         {
-            get => (int)GetValue();
+            get => 0;
+            set => SetValue(value);
+        }
+
+        [Obsolete]
+        public string ExtraParameters
+        {
+            get => null;
             set => SetValue(value);
         }
 

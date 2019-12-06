@@ -44,9 +44,10 @@ namespace ScreenToGif
                 Argument.Prepare(e.Args);
 
             LocalizationHelper.SelectCulture(UserSettings.All.LanguageCode);
+            ThemeHelper.SelectTheme(UserSettings.All.MainTheme.ToString());
 
-            if (UserSettings.All.DisableHardwareAcceleration)
-                RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
+            //Render mode.
+            RenderOptions.ProcessRenderMode = UserSettings.All.DisableHardwareAcceleration ? RenderMode.SoftwareOnly : RenderMode.Default;
 
             #region Net Framework
 
@@ -92,7 +93,23 @@ namespace ScreenToGif
             NotifyIcon = (NotifyIcon)FindResource("NotifyIcon");
 
             if (NotifyIcon != null)
-                NotifyIcon.Visibility = UserSettings.All.ShowNotificationIcon || UserSettings.All.StartUp == 5 ? Visibility.Visible : Visibility.Collapsed;
+            {
+                NotifyIcon.Visibility = UserSettings.All.ShowNotificationIcon || UserSettings.All.StartMinimized || UserSettings.All.StartUp == 5 ? Visibility.Visible : Visibility.Collapsed;
+
+                //Replace the old option with the new setting.
+                if (UserSettings.All.StartUp == 5)
+                {
+                    UserSettings.All.StartMinimized  = true;
+                    UserSettings.All.ShowNotificationIcon  = true;
+                    UserSettings.All.StartUp = 0;
+                }
+
+                //using (var iconStream = GetResourceStream(new Uri("pack://application:,,,/Resources/Logo.ico"))?.Stream)
+                //{
+                //    if (iconStream != null)
+                //        NotifyIcon.Icon = new System.Drawing.Icon(iconStream);
+                //}
+            }
 
             MainViewModel = (ApplicationViewModel)FindResource("AppViewModel") ?? new ApplicationViewModel();
 
@@ -103,6 +120,7 @@ namespace ScreenToGif
             //var select = new SelectFolderDialog(); select.ShowDialog(); return;
             //var select = new TestField(); select.ShowDialog(); return;
             //var select = new Encoder(); select.ShowDialog(); return;
+            //var select = new EditorEx(); select.ShowDialog(); return;
 
             #region Tasks
 
@@ -114,13 +132,17 @@ namespace ScreenToGif
 
             #region Startup
 
+            //When starting minimized, the 
+            if (UserSettings.All.StartMinimized)
+                return;
+
             if (UserSettings.All.StartUp == 4 || Argument.FileNames.Any())
             {
                 MainViewModel.OpenEditor.Execute(null);
                 return;
             }
 
-            if (UserSettings.All.StartUp == 0)
+            if (UserSettings.All.StartUp < 1 || UserSettings.All.StartUp > 4)
             {
                 MainViewModel.OpenLauncher.Execute(null);
                 return;
@@ -159,7 +181,7 @@ namespace ScreenToGif
 
         private void App_OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            LogWriter.Log(e.Exception, "On Dispacher Unhandled Exception - Unknown");
+            LogWriter.Log(e.Exception, "On dispacher unhandled exception - Unknown");
 
             try
             {
@@ -178,7 +200,7 @@ namespace ScreenToGif
         {
             if (!(e.ExceptionObject is Exception exception)) return;
 
-            LogWriter.Log(exception, "Current Domain Unhandled Exception - Unknown");
+            LogWriter.Log(exception, "Current domain unhandled exception - Unknown");
 
             try
             {

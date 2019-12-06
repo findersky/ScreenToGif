@@ -27,7 +27,7 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
         /// <summary>
         /// Transparent color if given.
         /// </summary>
-        private Color _transparent = Color.Empty;
+        private System.Windows.Media.Color? _transparent = null;
 
         /// <summary>
         /// Transparent index in color table.
@@ -118,16 +118,31 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
         /// </summary>
         private int _sample = 10;
 
+        /// <summary>
+        /// Cumulative non adjusted time.
+        /// </summary>
+        private int _organicTime;
+
+        /// <summary>
+        /// Adjusted and rounded off time.
+        /// </summary>
+        private int _adjustedTime;
+
         #endregion
 
         /// <summary>
         /// Sets the delay time between each frame, or changes it
         /// for subsequent frames (applies to last frame added).
         /// </summary>
-        /// <param name="ms">Delay time in milliseconds</param>
-        public void SetDelay(int ms)
+        /// <param name="delay">Delay time in milliseconds</param>
+        public void SetDelay(int delay)
         {
-            _delay = (int)Math.Round(ms / 10.0f, MidpointRounding.AwayFromZero);
+            //Calculates the delay, taking into consideration overall rounding. Bug!
+            //_organicTime += delay;
+            //_delay = (int)Math.Round((_organicTime > delay ? _organicTime - _adjustedTime * 10 : delay) / 10.0f, MidpointRounding.AwayFromZero);
+            //_adjustedTime += _delay;
+
+            _delay = (int)Math.Round(delay / 10.0f, MidpointRounding.AwayFromZero);
         }
 
         /// <summary>
@@ -139,9 +154,7 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
         public void SetDispose(int code)
         {
             if (code >= 0)
-            {
                 _dispose = code;
-            }
         }
 
         /// <summary>
@@ -154,9 +167,7 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
         public void SetRepeat(int iter)
         {
             if (iter >= 0)
-            {
                 _repeat = iter;
-            }
         }
 
         /// <summary>
@@ -168,7 +179,7 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
         /// May be set to null to indicate no transparent color.
         /// </summary>
         /// <param name="c">Color to be treated as transparent on display.</param>
-        public void SetTransparent(Color c)
+        public void SetTransparent(System.Windows.Media.Color c)
         {
             _transparent = c;
         }
@@ -208,20 +219,16 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
                     WriteLsd(); //Logical screen descriptor.
                     WritePalette(); //Global color table.
 
+                    //Use Netscape app extension to indicate a gif with multiple frames.
                     if (_repeat >= 0)
-                    {
-                        //Use Netscape app extension to indicate a gif with multiple frames.
                         WriteNetscapeExt();
-                    }
                 }
 
                 WriteGraphicCtrlExt(); //Write graphic control extension.
                 WriteImageDesc(im.Width, im.Height, x, y); //Image descriptor.
 
                 if (!_firstFrame)
-                {
                     WritePalette(); //Local color table.
-                }
 
                 WritePixels(im.Width, im.Height); //Encode and write pixel data.
                 _firstFrame = false;
@@ -251,9 +258,7 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
                 _fs.Flush();
 
                 if (_closeStream)
-                {
                     _fs.Close();
-                }
             }
             catch (IOException e)
             {
@@ -280,9 +285,7 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
         public void SetFrameRate(float fps)
         {
             if (fps != 0f)
-            {
-                _delay = (int)Math.Round(100f / fps, MidpointRounding.AwayFromZero);
-            }
+                _delay = (int) Math.Round(100f / fps, MidpointRounding.AwayFromZero);
         }
 
         /// <summary>
@@ -296,7 +299,9 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
         /// <param name="quality">Quality value greater than 0.</param>
         public void SetQuality(int quality)
         {
-            if (quality < 1) quality = 1;
+            if (quality < 1)
+                quality = 1;
+
             _sample = quality;
         }
 
@@ -382,10 +387,10 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
             var nPix = _pixels.Length / 3;
             _indexedPixels = new byte[nPix];
 
-            var colorTable = _colorList.AsParallel().GroupBy(x => x) //Grouping based on its value
-                .OrderByDescending(g => g.Count()) //Order by most frequent values
-                .Select(g => g.FirstOrDefault()) //take the first among the group
-                .ToList(); //Could use .Take(256)
+            var colorTable = _colorList.AsParallel().GroupBy(x => x) //Grouping based on its value.
+                .OrderByDescending(g => g.Count()) //Order by most frequent values.
+                .Select(g => g.FirstOrDefault()) //Take the first among the group.
+                .ToList(); //Could use .Take(256).
 
             _usedEntry = new bool[256];
 
@@ -395,7 +400,7 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
 
                 _colorTab = new byte[768];
 
-                int indexAux = 0;
+                var indexAux = 0;
                 foreach (var color in colorTable)
                 {
                     _colorTab[indexAux++] = color.R;
@@ -426,9 +431,9 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
                 }
 
                 //Get closest match to transparent color if specified.
-                if (_transparent != Color.Empty)
+                if (_transparent != null)
                 {
-                    _transIndex = colorTable.IndexOf(Color.FromArgb(_transparent.R, _transparent.G, _transparent.B));
+                    _transIndex = colorTable.IndexOf(Color.FromArgb(_transparent.Value.R, _transparent.Value.G, _transparent.Value.B));
 
                     //if (_transIndex == -1)
                     //    _transIndex = 0;
@@ -441,7 +446,7 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
                 #region Quantitizer needed
 
                 //Neural quantitizer.
-                var nq = new NeuQuant(_pixels, _sample);
+                var nq = new NeuQuant(_pixels, _sample, _firstFrame ? null : _transparent);
 
                 //Create reduced palette.
                 _colorTab = nq.Process();
@@ -457,10 +462,8 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
                 }
 
                 //Get closest match to transparent color if specified.
-                if (_transparent != Color.Empty)
-                {
-                    _transIndex = nq.Map(_transparent.B, _transparent.G, _transparent.R);
-                }
+                if (_transparent != null && !_firstFrame)
+                    _transIndex = nq.Map(_transparent.Value.B, _transparent.Value.G, _transparent.Value.R);
 
                 #endregion
             }
@@ -561,7 +564,7 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
 
             int transp = 0, disp = 0;
 
-            if (_transparent != Color.Empty)
+            if (_transparent != null)
             {
                 if (_firstFrame)
                 {
@@ -671,9 +674,7 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
 
             //Fills the rest of palette with zeros (If any space left).
             for (var i = 0; i < n; i++)
-            {
                 _fs.WriteByte(0);
-            }
         }
 
         /// <summary>
@@ -694,9 +695,9 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
             _fs.WriteByte(0x21);
             _fs.WriteByte(0xfe);
 
-            //byte[] lenght = StringToByteArray(comment.Length.ToString("X"));
+            //byte[] length = StringToByteArray(comment.Length.ToString("X"));
 
-            //foreach (byte b in lenght)
+            //foreach (byte b in length)
             //{
             //    fs.WriteByte(b);
             //}
@@ -716,9 +717,8 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
         public static byte[] StringToByteArray(string hex)
         {
             if (hex.Length % 2 == 1) //if odd
-            {
+
                 hex = hex.PadLeft(1, '0');
-            }
 
             var numberChars = hex.Length / 2;
             var bytes = new byte[numberChars];
@@ -751,9 +751,7 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
             var chars = s.ToCharArray();
 
             foreach (var t in chars)
-            {
-                _fs.WriteByte((byte)t);
-            }
+                _fs.WriteByte((byte) t);
         }
 
         public void Dispose()
@@ -774,9 +772,7 @@ namespace ScreenToGif.ImageUtil.Gif.LegacyEncoder
                 _fs.Flush();
 
                 if (_closeStream)
-                {
                     _fs.Close();
-                }
             }
             catch (Exception ex)
             {

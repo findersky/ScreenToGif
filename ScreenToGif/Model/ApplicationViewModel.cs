@@ -66,7 +66,10 @@ namespace ScreenToGif.Model
                     ExecuteAction = a =>
                     {
                         var caller = a as Window;
-                        caller?.Hide();
+                        var editor = a as Editor;
+
+                        if (editor == null)
+                            caller?.Hide();
 
                         if (UserSettings.All.NewRecorder)
                         {
@@ -77,13 +80,23 @@ namespace ScreenToGif.Model
 
                                 if (window?.Project != null && window.Project.Any)
                                 {
-                                    ShowEditor(window.Project);
-                                    caller?.Close();
+                                    if (editor == null)
+                                    {
+                                        ShowEditor(window.Project);
+                                        caller?.Close();
+                                    }
+                                    else
+                                        editor.RecorderCallback(window.Project);
                                 }
                                 else
                                 {
-                                    caller?.Show();
-                                    CloseOrNot();
+                                    if (editor == null)
+                                    {
+                                        caller?.Show();
+                                        CloseOrNot();
+                                    }
+                                    else
+                                        editor.RecorderCallback(null);
                                 }
                             };
 
@@ -100,13 +113,23 @@ namespace ScreenToGif.Model
 
                             if (window?.Project != null && window.Project.Any)
                             {
-                                ShowEditor(window.Project);
-                                caller?.Close();
+                                if (editor == null)
+                                {
+                                    ShowEditor(window.Project);
+                                    caller?.Close();
+                                }
+                                else
+                                    editor.RecorderCallback(window.Project);
                             }
                             else
                             {
-                                caller?.Show();
-                                CloseOrNot();
+                                if (editor == null)
+                                {
+                                    caller?.Show();
+                                    CloseOrNot();
+                                }
+                                else
+                                    editor.RecorderCallback(null);
                             }
                         };
 
@@ -131,7 +154,10 @@ namespace ScreenToGif.Model
                     ExecuteAction = a =>
                     {
                         var caller = a as Window;
-                        caller?.Hide();
+                        var editor = a as Editor;
+
+                        if (editor == null)
+                            caller?.Hide();
 
                         var recorder = new Windows.Webcam();
                         recorder.Closed += (sender, args) =>
@@ -140,13 +166,23 @@ namespace ScreenToGif.Model
 
                             if (window?.Project != null && window.Project.Any)
                             {
-                                ShowEditor(window.Project);
-                                caller?.Close();
+                                if (editor == null)
+                                {
+                                    ShowEditor(window.Project);
+                                    caller?.Close();
+                                }
+                                else
+                                    editor.RecorderCallback(window.Project);
                             }
                             else
                             {
-                                caller?.Show();
-                                CloseOrNot();
+                                if (editor == null)
+                                {
+                                    caller?.Show();
+                                    CloseOrNot();
+                                }
+                                else
+                                    editor.RecorderCallback(null);
                             }
                         };
 
@@ -171,7 +207,10 @@ namespace ScreenToGif.Model
                     ExecuteAction = a =>
                     {
                         var caller = a as Window;
-                        caller?.Hide();
+                        var editor = a as Editor;
+
+                        if (editor == null)
+                            caller?.Hide();
 
                         var recorder = new Board();
                         recorder.Closed += (sender, args) =>
@@ -180,13 +219,23 @@ namespace ScreenToGif.Model
 
                             if (window?.Project != null && window.Project.Any)
                             {
-                                ShowEditor(window.Project);
-                                caller?.Close();
+                                if (editor == null)
+                                {
+                                    ShowEditor(window.Project);
+                                    caller?.Close();
+                                }
+                                else
+                                    editor.RecorderCallback(window.Project);
                             }
                             else
                             {
-                                caller?.Show();
-                                CloseOrNot();
+                                if (editor == null)
+                                {
+                                    caller?.Show();
+                                    CloseOrNot();
+                                }
+                                else
+                                    editor.RecorderCallback(null);
                             }
                         };
 
@@ -343,6 +392,39 @@ namespace ScreenToGif.Model
             }
         }
 
+        public ICommand TrayLeftClick
+        {
+            get
+            {
+                return new RelayCommand
+                {
+                    ExecuteAction = a => Interact(UserSettings.All.LeftClickAction, UserSettings.All.LeftOpenWindow)
+                };
+            }
+        }
+
+        public ICommand TrayDoubleLeftClick
+        {
+            get
+            {
+                return new RelayCommand
+                {
+                    ExecuteAction = a => Interact(UserSettings.All.DoubleLeftClickAction, UserSettings.All.DoubleLeftOpenWindow)
+                };
+            }
+        }
+
+        public ICommand TrayMiddleClick
+        {
+            get
+            {
+                return new RelayCommand
+                {
+                    ExecuteAction = a => Interact(UserSettings.All.MiddleClickAction, UserSettings.All.MiddleOpenWindow)
+                };
+            }
+        }
+
         public ICommand ExitApplication
         {
             get
@@ -404,9 +486,152 @@ namespace ScreenToGif.Model
             //When closed, check if it's the last window, then close if it's the configured behavior.
             if (!UserSettings.All.ShowNotificationIcon || !UserSettings.All.KeepOpen)
             {
-                //We only need to check loaded windows that have content
+                //We only need to check loaded windows that have content, since any special window could be open.
                 if (Application.Current.Windows.Cast<Window>().Count(window => window.HasContent) == 0)
                     Application.Current.Shutdown(2);
+            }
+        }
+
+        private void Interact(int action, int open)
+        {
+            switch (action)
+            {
+                case 1: //Open a window.
+                {
+                    switch (open)
+                    {
+                        case 1: //Startup.
+                        {
+                            OpenLauncher.Execute(null);
+                            break;
+                        }
+                        case 2: //Recorder.
+                        {
+                            if (!OpenRecorder.CanExecute(null))
+                            {
+                                var rec = Application.Current.Windows.OfType<RecorderWindow>().FirstOrDefault();
+
+                                if (rec != null)
+                                {
+                                    if (rec.WindowState == WindowState.Minimized)
+                                        rec.WindowState = WindowState.Normal;
+
+                                    //Bring to foreground.
+                                    rec.Activate();
+                                    return;
+                                }
+                            }
+
+                            OpenRecorder.Execute(null);
+                            return;
+                        }
+                        case 3: //Webcam.
+                        {
+                            if (!OpenWebcamRecorder.CanExecute(null))
+                            {
+                                var rec = Application.Current.Windows.OfType<RecorderWindow>().FirstOrDefault();
+
+                                if (rec != null)
+                                {
+                                    if (rec.WindowState == WindowState.Minimized)
+                                        rec.WindowState = WindowState.Normal;
+
+                                    //Bring to foreground.
+                                    rec.Activate();
+                                    return;
+                                }
+                            }
+
+                            OpenWebcamRecorder.Execute(null);
+                            break;
+                        }
+                        case 4: //Board.
+                        {
+                            if (!OpenBoardRecorder.CanExecute(null))
+                            {
+                                var rec = Application.Current.Windows.OfType<RecorderWindow>().FirstOrDefault();
+
+                                if (rec != null)
+                                {
+                                    if (rec.WindowState == WindowState.Minimized)
+                                        rec.WindowState = WindowState.Normal;
+
+                                    //Bring to foreground.
+                                    rec.Activate();
+                                    return;
+                                }
+                            }
+
+                            OpenBoardRecorder.Execute(null);
+                            break;
+                        }
+                        case 5: //Editor.
+                        {
+                            OpenEditor.Execute(null);
+                            break;
+                        }
+                    }
+
+                    break;
+                }
+
+                case 2: //Minimize/restore all windows.
+                {
+                    var all = Application.Current.Windows.OfType<Window>().Where(w => w.Content != null).ToList();
+
+                    if (all.Count == 0)
+                    {
+                        Interact(1, open);
+                        return;
+                    }
+
+                    if (all.Any(n => n.WindowState != WindowState.Minimized))
+                    {
+                        //Minimize all windows.
+                        foreach (var window in all)
+                            window.WindowState = WindowState.Minimized;
+                    }
+                    else
+                    {
+                        //Restore all windows.
+                        foreach (var window in all)
+                            window.WindowState = WindowState.Normal;
+                    }
+
+                    break;
+                }
+
+                case 3: //Minimize all windows.
+                {
+                    var all = Application.Current.Windows.OfType<Window>().Where(w => w.Content != null).ToList();
+
+                    if (all.Count == 0)
+                    {
+                        Interact(1, open);
+                        return;
+                    }
+
+                    foreach (var window in all)
+                        window.WindowState = WindowState.Minimized;
+
+                    break;
+                }
+
+                case 4: //Restore all windows.
+                {
+                    var all = Application.Current.Windows.OfType<Window>().Where(w => w.Content != null).ToList();
+
+                    if (all.Count == 0)
+                    {
+                        Interact(1, open);
+                        return;
+                    }
+
+                    foreach (var window in all)
+                        window.WindowState = WindowState.Normal;
+
+                    break;
+                }
             }
         }
 
@@ -414,12 +639,12 @@ namespace ScreenToGif.Model
         {
             try
             {
-                if (!UserSettings.All.AutomaticCleanUp || Global.IsCurrentlyDeletingFiles)
+                if (!UserSettings.All.AutomaticCleanUp || Global.IsCurrentlyDeletingFiles || string.IsNullOrWhiteSpace(UserSettings.All.TemporaryFolderResolved))
                     return;
 
                 Global.IsCurrentlyDeletingFiles = true;
 
-                var path = Path.Combine(UserSettings.All.TemporaryFolder, "ScreenToGif", "Recording");
+                var path = Path.Combine(UserSettings.All.TemporaryFolderResolved, "ScreenToGif", "Recording");
 
                 if (!Directory.Exists(path))
                     return;
@@ -428,7 +653,7 @@ namespace ScreenToGif.Model
                     .Where(w => (DateTime.Now - w.CreationTime).TotalDays > (UserSettings.All.AutomaticCleanUpDays > 0 ? UserSettings.All.AutomaticCleanUpDays : 5)).ToList();
 
                 //var list = Directory.GetDirectories(path).Select(x => new DirectoryInfo(x));
-                
+
                 foreach (var folder in list)
                 {
                     if (MutexList.IsInUse(folder.Name))
@@ -450,13 +675,13 @@ namespace ScreenToGif.Model
 
         internal void CheckDiskSpace()
         {
-            if (string.IsNullOrWhiteSpace(UserSettings.All.TemporaryFolder))
+            if (string.IsNullOrWhiteSpace(UserSettings.All.TemporaryFolderResolved))
                 return;
 
             try
             {
-                var isRelative = !string.IsNullOrWhiteSpace(UserSettings.All.TemporaryFolder) && !Path.IsPathRooted(UserSettings.All.TemporaryFolder);
-                var drive = new DriveInfo((isRelative ? Path.GetFullPath(UserSettings.All.TemporaryFolder) : UserSettings.All.TemporaryFolder).Substring(0, 1));
+                var isRelative = !string.IsNullOrWhiteSpace(UserSettings.All.TemporaryFolderResolved) && !Path.IsPathRooted(UserSettings.All.TemporaryFolderResolved);
+                var drive = new DriveInfo((isRelative ? Path.GetFullPath(UserSettings.All.TemporaryFolderResolved) : UserSettings.All.TemporaryFolderResolved).Substring(0, 1));
 
                 Global.AvailableDiskSpacePercentage = drive.AvailableFreeSpace * 100d / drive.TotalSize; //Get the percentage of space left.
                 Global.AvailableDiskSpace = drive.AvailableFreeSpace;
@@ -464,7 +689,7 @@ namespace ScreenToGif.Model
                 //If there's less than 2GB left.
                 if (drive.AvailableFreeSpace < 2000000000)
                     Application.Current.Dispatcher.Invoke(() => NotificationManager.AddNotification(LocalizationHelper.GetWithFormat("Editor.Warning.LowSpace", Math.Round(Global.AvailableDiskSpacePercentage, 2)),
-                        StatusType.Warning, "disk", () => App.MainViewModel.OpenOptions.Execute(5)));
+                        StatusType.Warning, "disk", () => App.MainViewModel.OpenOptions.Execute(Options.TempFilesIndex)));
                 else
                     Application.Current.Dispatcher.Invoke(() => NotificationManager.RemoveNotification(r => r.Tag == "disk"));
             }
@@ -478,7 +703,10 @@ namespace ScreenToGif.Model
         {
             try
             {
-                var path = Path.Combine(UserSettings.All.TemporaryFolder, "ScreenToGif", "Feedback");
+                if (string.IsNullOrWhiteSpace(UserSettings.All.TemporaryFolderResolved))
+                    return;
+
+                var path = Path.Combine(UserSettings.All.TemporaryFolderResolved, "ScreenToGif", "Feedback");
 
                 if (!Directory.Exists(path))
                     return;
@@ -516,6 +744,8 @@ namespace ScreenToGif.Model
 
             if (!UserSettings.All.CheckForUpdates)
                 return;
+
+#if !UWP
 
             try
             {
@@ -561,6 +791,8 @@ namespace ScreenToGif.Model
             {
                 LogWriter.Log(ex, "Check for update task");
             }
+
+#endif
 
             GC.Collect();
         }

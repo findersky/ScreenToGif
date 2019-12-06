@@ -18,7 +18,7 @@
     <s:String x:Key="Preview">預覽</s:String>
 
     <!--StartUp Page-->
-    <s:String x:Key="Title.StartUp">Screen To Gif - 啟動</s:String>
+    <s:String x:Key="Title.StartUp">ScreenToGif - 啟動</s:String>
     <s:String x:Key="Recorder">螢幕錄影</s:String>
     <s:String x:Key="Webcam">網路攝影機錄影</s:String>
     <s:String x:Key="Board">繪圖板錄影</s:String>
@@ -40,121 +40,113 @@
     <s:String x:Key="Update.CloseThis.Detail">這是較舊的版本。您早已下載過新的版本。</s:String>
     
     <!--Options Page-->
-    <s:String x:Key="Title.Options">Screen To Gif - 選項</s:String>
-    <s:String x:Key="Application">應用程式</s:String>
-    <s:String x:Key="S.Shortcuts">鍵盤快速鍵</s:String>
-    <s:String x:Key="Interface">介面</s:String>
-    <s:String x:Key="Image">圖像</s:String>
-    <s:String x:Key="Language">語言</s:String>
-    <s:String x:Key="TemporaryFiles">暫存檔</s:String>
-    <s:String x:Key="Extras">擴充</s:String>
-    <s:String x:Key="Donate">捐贈</s:String>
-    <s:String x:Key="About">關於</s:String>
+    <s:String x:Key="S.Options.Title">ScreenToGif - 選項</s:String>
+    <s:String x:Key="S.Options.App">應用程式</s:String>
+    <s:String x:Key="S.Options.Shortcuts">鍵盤快速鍵</s:String>
+    <s:String x:Key="S.Options.Interface">介面</s:String>
+    <s:String x:Key="S.Options.Language">語言</s:String>
+    <s:String x:Key="S.Options.Storage">暫存檔</s:String>
+    <s:String x:Key="S.Options.Extras">擴充</s:String>
+    <s:String x:Key="S.Options.Donate">捐贈</s:String>
+    <s:String x:Key="S.Options.About">關於</s:String>
     
-    <s:String x:Key="S.Application.Other.Homepage">首頁:</s:String>
-    <s:String x:Key="S.Application.Other.Homepage.StartUp">啟動視窗</s:String>
-    <s:String x:Key="S.Application.Other.Homepage.Recorder">螢幕錄影</s:String>
-    <s:String x:Key="S.Application.Other.Homepage.Webcam">網路攝影機錄影</s:String>
-    <s:String x:Key="S.Application.Other.Homepage.Board">繪圖板錄影</s:String>
-    <s:String x:Key="S.Application.Other.Homepage.Editor">編輯器視窗</s:String>
+    <s:String x:Key="S.Options.App.Startup.Window.Startup">啟動視窗</s:String>
+    <s:String x:Key="S.Options.App.Startup.Window.Recorder">螢幕錄影</s:String>
+    <s:String x:Key="S.Options.App.Startup.Window.Webcam">網路攝影機錄影</s:String>
+    <s:String x:Key="S.Options.App.Startup.Window.Board">繪圖板錄影</s:String>
+    <s:String x:Key="S.Options.App.Startup.Window.Editor">編輯器視窗</s:String>
     
-    <s:String x:Key="Application.ScreenRecorder">螢幕錄影</s:String>
-    <s:String x:Key="Application.ScreenRecorder.RecordMouse">錄影時顯示滑鼠游標。</s:String>
-    <s:String x:Key="Application.ScreenRecorder.RecordClicks">偵測滑鼠點擊。</s:String>
-    <s:String x:Key="Application.ScreenRecorder.SelectCursorColor">選擇游標顏色</s:String>
-    <s:String x:Key="Application.ScreenRecorder.PreStart">使用前開始倒數計時。</s:String>
-    <s:String x:Key="Application.ScreenRecorder.PreStart.Info">(以秒為單位，在開始擷取之前等待時間)</s:String>
-    <s:String x:Key="Application.ScreenRecorder.StepRecording">啟用快照模式。</s:String>
-    <s:String x:Key="Application.ScreenRecorder.StepRecording.Info">(每個幀將由您手動擷取)</s:String>
-    <s:String x:Key="Application.ScreenRecorder.FullRecording">啟用全螢幕模式。</s:String>
-    <s:String x:Key="Application.ScreenRecorder.FullRecording.Info">(實驗性，將擷取主畫面)</s:String>
-    <s:String x:Key="Application.ScreenRecorder.FixedFramerate">固定幀率。</s:String>
-    <s:String x:Key="Application.ScreenRecorder.FixedFramerate.Info">(固定延遲，不會導致錄影時間延長)</s:String>
-    <s:String x:Key="Application.ScreenRecorder.AsyncRecording">啟用非同步錄影。</s:String>
-    <s:String x:Key="Application.ScreenRecorder.AsyncRecording.Info">(它能降低錄影時介面的延遲)</s:String>
+    <s:String x:Key="S.Options.Recorder.RecordMouse">錄影時顯示滑鼠游標。</s:String>
+    <s:String x:Key="S.Options.Recorder.RecordClicks">偵測滑鼠點擊。</s:String>
+    <s:String x:Key="S.Options.Recorder.SelectCursorColor">選擇游標顏色</s:String>
+    <s:String x:Key="S.Options.Recorder.PreStart">使用前開始倒數計時。</s:String>
+    <s:String x:Key="S.Options.Recorder.PreStart.Info">(以秒為單位，在開始擷取之前等待時間)</s:String>
+    <s:String x:Key="S.Options.Recorder.StepRecording">啟用快照模式。</s:String>
+    <s:String x:Key="S.Options.Recorder.StepRecording.Info">(每個幀將由您手動擷取)</s:String>
+    <s:String x:Key="S.Options.Recorder.FullRecording">啟用全螢幕模式。</s:String>
+    <s:String x:Key="S.Options.Recorder.FullRecording.Info">(實驗性，將擷取主畫面)</s:String>
+    <s:String x:Key="S.Options.Recorder.FixedFramerate">固定幀率。</s:String>
+    <s:String x:Key="S.Options.Recorder.FixedFramerate.Info">(固定延遲，不會導致錄影時間延長)</s:String>
+    <s:String x:Key="S.Options.Recorder.AsyncRecording">啟用非同步錄影。</s:String>
+    <s:String x:Key="S.Options.Recorder.AsyncRecording.Info">(它能降低錄影時介面的延遲)</s:String>
     
-    <s:String x:Key="Application.Other">其它</s:String>
-    <s:String x:Key="Application.Other.CheckForUpdates">檢查更新。</s:String>
+    <s:String x:Key="S.Options.Other">其它</s:String>
+    <s:String x:Key="S.Options.App.General.CheckForUpdates">檢查更新。</s:String>
     
-    <s:String x:Key="Interface.EditorBackground">編輯器背景</s:String>
-    <s:String x:Key="Interface.Recorder">錄影程式主題</s:String>
-    <s:String x:Key="Interface.Background">背景</s:String>
-    <s:String x:Key="Interface.Foreground">前景</s:String>
-    <s:String x:Key="Interface.BoardBackground">繪圖板背景</s:String>
-    <s:String x:Key="Interface.EditorBackground.Scheme">顏色配置</s:String>
-    <s:String x:Key="Interface.EditorBackground.Scheme.VeryLight">非常淺</s:String>
-    <s:String x:Key="Interface.EditorBackground.Scheme.Light">淺</s:String>
-    <s:String x:Key="Interface.EditorBackground.Scheme.Medium">中</s:String>
-    <s:String x:Key="Interface.EditorBackground.Scheme.Dark">深</s:String>
-    <s:String x:Key="Interface.EditorBackground.Scheme.Custom">自訂</s:String>
-    
-    <s:String x:Key="Interface.EditorBackground.GridSize">網格大小</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.VerySmall">非常小</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.Small">小</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.Medium">中</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.Large">大</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.VeryLarge">非常大</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.ILikeBigSquares">大方格</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.ImBlind">特大</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.Custom">自訂</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground">編輯器背景</s:String>
+    <s:String x:Key="S.Options.Interface.Recorder">錄影程式主題</s:String>
+    <s:String x:Key="S.Options.Interface.Background">背景</s:String>
+    <s:String x:Key="S.Options.Interface.Foreground">前景</s:String>
+    <s:String x:Key="S.Options.Interface.BoardBackground">繪圖板背景</s:String>
+    <s:String x:Key="S.Options.Interface.Theme.Scheme">顏色配置</s:String>
+    <s:String x:Key="S.Options.Interface.Theme.Scheme.VeryLight">非常淺</s:String>
+    <s:String x:Key="S.Options.Interface.Theme.Scheme.Light">淺</s:String>
+    <s:String x:Key="S.Options.Interface.Theme.Scheme.Medium">中</s:String>
+    <s:String x:Key="S.Options.Interface.Theme.Scheme.Dark">深</s:String>
+    <s:String x:Key="S.Options.Interface.Theme.Scheme.Custom">自訂</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize">網格大小</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.VerySmall">非常小</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.Small">小</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.Medium">中</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.Large">大</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.VeryLarge">非常大</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.ILikeBigSquares">大方格</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.ImBlind">特大</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.Custom">自訂</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.BaseColor">基準色彩</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.EvenColor">顏色 1</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.OddColor">顏色 2</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.Height">高度</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.Width">寬度</s:String>
+    <s:String x:Key="S.Options.Interface.EditorBackground.GridSize.Apply">套用</s:String>
+    <s:String x:Key="S.Options.Interface.Other.ExtendChrome">延伸標題列/Chrome。</s:String>
+    <s:String x:Key="S.Options.Interface.Other.HideTitleBar">隱藏標題列(瘦身模式)。</s:String>
+    <s:String x:Key="S.Options.Interface.Other.TripleClickSelection">啟用連按三下來選擇文字。</s:String>
 
-    <s:String x:Key="Interface.EditorBackground.BaseColor">基準色彩</s:String>
-    <s:String x:Key="Interface.EditorBackground.EvenColor">顏色 1</s:String>
-    <s:String x:Key="Interface.EditorBackground.OddColor">顏色 2</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.Height">高度</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.Width">寬度</s:String>
-    <s:String x:Key="Interface.EditorBackground.GridSize.Apply">套用</s:String>
+    <s:String x:Key="S.Options.Shortcuts.Recorders.StartPause">開始/暫停:</s:String>
+    <s:String x:Key="S.Options.Shortcuts.Recorders.Stop">停止:</s:String>
+    <s:String x:Key="S.Options.Shortcuts.Recorders.Discard">捨棄:</s:String>
+    <s:String x:Key="S.Options.Shortcuts.Recorders.Info">按一下以設定鍵盤焦點，然後點選所需的按鍵和輔助按鍵。不允許使用某些按鍵組合。</s:String>
 
-    <s:String x:Key="Interface.Other">其它</s:String>
-    <s:String x:Key="Interface.Other.ExtendChrome">延伸標題列/Chrome。</s:String>
-    <s:String x:Key="Interface.Other.HideTitleBar">隱藏標題列(瘦身模式)。</s:String>
-    <s:String x:Key="Interface.Other.TripleClickSelection">啟用連按三下來選擇文字。</s:String>
-
-    <s:String x:Key="S.Shortcuts.Recorders.StartPause">開始/暫停:</s:String>
-    <s:String x:Key="S.Shortcuts.Recorders.Stop">停止:</s:String>
-    <s:String x:Key="S.Shortcuts.Recorders.Discard">捨棄:</s:String>
-    <s:String x:Key="S.Shortcuts.Recorders.Info">按一下以設定鍵盤焦點，然後點選所需的按鍵和輔助按鍵。不允許使用某些按鍵組合。</s:String>
-
-    <s:String x:Key="Language.AppLanguage">應用程式語言</s:String>
+    <s:String x:Key="S.Options.Language.AppLanguage">應用程式語言</s:String>
     
-    <s:String x:Key="TempFiles.FilesAndFolders">暫存檔案和資料夾</s:String>
-    <s:String x:Key="TempFiles.Folders">資料夾:</s:String>
-    <s:String x:Key="TempFiles.Files">檔案:</s:String>
-    <s:String x:Key="TempFiles.OpenFolder">打開資料夾</s:String>
-    <s:String x:Key="TempFiles.Clear">清空暫存資料夾</s:String>
-    <s:String x:Key="TempFiles.LogsLocation">記錄資料夾</s:String>
-    <s:String x:Key="TempFiles.LogsLocation.Choose">選擇錯誤記錄檔位置</s:String>
-    <s:String x:Key="TempFiles.Location">資料夾位置</s:String>
-    <s:String x:Key="TempFiles.Location.Choose">選擇暫存檔案的位置</s:String>
-    <s:String x:Key="TempFiles.Settings">設定位置</s:String>
-    <!--<s:String x:Key="TempFiles.AppDataPath">AppData:</s:String>-->
-    <s:String x:Key="TempFiles.LocalPath">本機:</s:String>
-    <s:String x:Key="TempFiles.NotExists">它不存在</s:String>
-    <s:String x:Key="TempFiles.CreateSettings">建立空的本機設定檔。</s:String>
-    <s:String x:Key="TempFiles.RemoveSettings">移除設定檔。</s:String>
-    <s:String x:Key="TempFiles.SettingsInfo">• 設定載入模式: 預設 ◄ AppData ◄ 本機。\n• 如果本機資料夾中沒有設定檔，應用程式將在 AppData 資料夾中搜尋，如果沒有設定檔，則使用預設值。\n• 如果沒有本機設定，所有設定都儲存在 AppData 設定檔中。</s:String>
-    <s:String x:Key="TempFiles.KeepRecent">要保留最近的專案嗎?</s:String>
-    <s:String x:Key="TempFiles.KeepRecent.Info">如果您這樣想，所有最近 5 天內的專案將不會被刪除。</s:String>
-    <s:String x:Key="TempFiles.AutomaticRemoval">自動移除舊的專案。</s:String>
-    <s:String x:Key="TempFiles.AutomaticRemoval.Info">打開編輯器時，背景工作將清除超過 5 天的專案。</s:String>
+    <s:String x:Key="S.Options.Storage.FilesAndFolders">暫存檔案和資料夾</s:String>
+    <s:String x:Key="S.Options.Storage.Folders">資料夾:</s:String>
+    <s:String x:Key="S.Options.Storage.Files">檔案:</s:String>
+    <s:String x:Key="S.Options.Storage.OpenFolder">打開資料夾</s:String>
+    <s:String x:Key="S.Options.Storage.Clear">清空暫存資料夾</s:String>
+    <s:String x:Key="S.Options.Storage.LogsLocation">記錄資料夾</s:String>
+    <s:String x:Key="S.Options.Storage.LogsLocation.Choose">選擇錯誤記錄檔位置</s:String>
+    <s:String x:Key="S.Options.Storage.Location">資料夾位置</s:String>
+    <s:String x:Key="S.Options.Storage.Location.Choose">選擇暫存檔案的位置</s:String>
+    <s:String x:Key="S.Options.Storage.Settings">設定位置</s:String>
+    <!--<s:String x:Key="S.Options.Storage.AppDataPath">AppData:</s:String>-->
+    <s:String x:Key="S.Options.Storage.LocalPath">本機:</s:String>
+    <s:String x:Key="S.Options.Storage.NotExists">它不存在</s:String>
+    <s:String x:Key="S.Options.Storage.CreateSettings">建立空的本機設定檔。</s:String>
+    <s:String x:Key="S.Options.Storage.RemoveSettings">移除設定檔。</s:String>
+    <s:String x:Key="S.Options.Storage.SettingsInfo">• 設定載入模式: 預設 ◄ AppData ◄ 本機。\n• 如果本機資料夾中沒有設定檔，應用程式將在 AppData 資料夾中搜尋，如果沒有設定檔，則使用預設值。\n• 如果沒有本機設定，所有設定都儲存在 AppData 設定檔中。</s:String>
+    <s:String x:Key="S.Options.Storage.KeepRecent">要保留最近的專案嗎?</s:String>
+    <s:String x:Key="S.Options.Storage.KeepRecent.Info">如果您這樣想，所有最近 5 天內的專案將不會被刪除。</s:String>
+    <s:String x:Key="S.Options.Storage.AutomaticRemoval">自動移除舊的專案。</s:String>
+    <s:String x:Key="S.Options.Storage.AutomaticRemoval.Info">打開編輯器時，背景工作將清除超過 5 天的專案。</s:String>
     
-    <s:String x:Key="Extras.FfmpegLocation">FFmpeg位置</s:String>
-    <s:String x:Key="Extras.FfmpegLocation.Select">選擇FFmpeg可執行檔的位置</s:String>
+    <s:String x:Key="S.Options.Extras.FfmpegLocation">FFmpeg位置</s:String>
+    <s:String x:Key="S.Options.Extras.FfmpegLocation.Select">選擇FFmpeg可執行檔的位置</s:String>
     
-    <s:String x:Key="Donate.IfYouWish">如果您想贊助 :D</s:String>
-    <s:String x:Key="Donate.DonateDollar">捐贈美金 US$</s:String>
-    <s:String x:Key="Donate.DonateEuro">捐贈歐元 €</s:String>
-    <s:String x:Key="Donate.Donate">捐贈</s:String>
+    <s:String x:Key="S.Options.Donate.Donate.Dollar">捐贈美金 US$</s:String>
+    <s:String x:Key="S.Options.Donate.Donate.Euro">捐贈歐元 €</s:String>
+    <s:String x:Key="S.Options.Donate.Donate">捐贈</s:String>
 
-    <s:String x:Key="About.Version">版本:</s:String>
-    <s:String x:Key="About.Author">作者: Nicke Manarin</s:String>
-    <s:String x:Key="About.Contact">聯繫</s:String>
-    <s:String x:Key="About.Technical">技術</s:String>
-    <s:String x:Key="About.Technical.License">授權:</s:String>
-    <s:String x:Key="About.Technical.Free">(這是完全免費的應用程式)</s:String>
-    <s:String x:Key="About.Technical.SourceCode">原始碼:</s:String>
-    <s:String x:Key="About.ABigThanksTo">非常感謝</s:String>
-    <s:String x:Key="About.ABigThanksTo.Everyone">我所有的支持者，提供意見反應和/或捐贈的人。</s:String>
+    <s:String x:Key="S.Options.About.Version">版本:</s:String>
+    <s:String x:Key="S.Options.About.Author">作者: Nicke Manarin</s:String>
+    <s:String x:Key="S.Options.About.Contact">聯繫</s:String>
+    <s:String x:Key="S.Options.About.Technical">技術</s:String>
+    <s:String x:Key="S.Options.About.Technical.License">授權:</s:String>
+    <s:String x:Key="S.Options.About.Technical.Free">(這是完全免費的應用程式)</s:String>
+    <s:String x:Key="S.Options.About.Technical.SourceCode">原始碼:</s:String>
+    <s:String x:Key="S.Options.About.ABigThanksTo">非常感謝</s:String>
+    <s:String x:Key="S.Options.About.ABigThanksTo.Everyone">我所有的支持者，提供意見反應和/或捐贈的人。</s:String>
 
     <!--Recorder-->
     <s:String x:Key="Recorder.RecordingOptions">錄影選項</s:String>
@@ -174,10 +166,10 @@
     <s:String x:Key="Recorder.FpsRange">最小到最大 fps: 1-60 fps</s:String>
     <s:String x:Key="Recorder.SnapToWindow">貼齊視窗(拖曳後放下來貼齊)</s:String>
     <s:String x:Key="Recorder.PreStart">啟動前</s:String>
-    <s:String x:Key="Recorder.Paused">Screen To Gif (已暫停)</s:String>
+    <s:String x:Key="Recorder.Paused">ScreenToGif (已暫停)</s:String>
     
     <!--Webcam Recorder-->
-    <s:String x:Key="Webcam.Title">Screen To Gif - 網路攝影機錄影</s:String>
+    <s:String x:Key="Webcam.Title">ScreenToGif - 網路攝影機錄影</s:String>
     <s:String x:Key="Webcam.NoVideo">未偵測到視訊裝置:(</s:String>
     <s:String x:Key="Webcam.CheckVideoDevices">檢查視訊裝置。</s:String>
     <s:String x:Key="Webcam.Scale">比例: x{0:0.##}</s:String>
@@ -226,19 +218,19 @@
     <s:String x:Key="InsertFrames.SelectColorFill">選擇畫布填充顏色</s:String>
 
     <!--Import Frames From Video-->
-    <s:String x:Key="ImportVideo.Title">從影片匯入幀</s:String>
-    <s:String x:Key="ImportVideo.Loading">載入中...</s:String>
-    <s:String x:Key="ImportVideo.Scale">縮放比例:</s:String>
-    <s:String x:Key="ImportVideo.Size">大小:</s:String>
-    <s:String x:Key="ImportVideo.Height">高度:</s:String>
-    <s:String x:Key="ImportVideo.Width">寬度:</s:String>
-    <s:String x:Key="ImportVideo.Framerate">幀率:</s:String>
-    <s:String x:Key="ImportVideo.Fps">fps</s:String>
-    <s:String x:Key="ImportVideo.Start">開始:</s:String>
-    <s:String x:Key="ImportVideo.End">結束:</s:String>
-    <s:String x:Key="ImportVideo.Selection">選取範圍:</s:String>
-    <s:String x:Key="ImportVideo.Frames">幀:</s:String>
-    <s:String x:Key="ImportVideo.Duration">期間:</s:String>
+    <s:String x:Key="S.ImportVideo.Title">從影片匯入幀</s:String>
+    <s:String x:Key="S.ImportVideo.Loading">載入中...</s:String>
+    <s:String x:Key="S.ImportVideo.Scale">縮放比例:</s:String>
+    <s:String x:Key="S.ImportVideo.Size">大小:</s:String>
+    <s:String x:Key="S.ImportVideo.Height">高度:</s:String>
+    <s:String x:Key="S.ImportVideo.Width">寬度:</s:String>
+    <s:String x:Key="S.ImportVideo.Framerate">幀率:</s:String>
+    <s:String x:Key="S.ImportVideo.Fps">fps</s:String>
+    <s:String x:Key="S.ImportVideo.Start">開始:</s:String>
+    <s:String x:Key="S.ImportVideo.End">結束:</s:String>
+    <s:String x:Key="S.ImportVideo.Selection">選取範圍:</s:String>
+    <s:String x:Key="S.ImportVideo.Frames">幀:</s:String>
+    <s:String x:Key="S.ImportVideo.Duration">期間:</s:String>
     
     <!--Encoder-->
     <s:String x:Key="Encoder.Title">編碼</s:String>
@@ -260,7 +252,7 @@
     <s:String x:Key="Encoder.Copy.Folder">複製資料夾路徑</s:String>
 
     <!--Editor-->
-    <s:String x:Key="Editor.Title">Screen To Gif - 編輯器</s:String>
+    <s:String x:Key="Editor.Title">ScreenToGif - 編輯器</s:String>
     <s:String x:Key="Editor.File">檔案</s:String>
     <s:String x:Key="Editor.Home">首頁</s:String>
     <s:String x:Key="Editor.Playback">播放</s:String>
@@ -612,7 +604,7 @@
     <s:String x:Key="OverrideDelay.Info">此新值將取代所有選定幀的持續時間(延遲)。該值可以從 10ms 到 25500ms。</s:String>
     <s:String x:Key="IncreaseDecreaseDelay.Info">該值將減少/增加每個所選幀的持續時間(延遲)。\n您可以透過選擇 -10000 和 10000ms 之間的值進行遞減/遞增，但每幀的最終持續時間將限制在 10ms 到 25500ms 之間</s:String>
     
-    <s:String x:Key="Transitions.Lenght">轉場長度</s:String>
+    <s:String x:Key="Transitions.Length">轉場長度</s:String>
     <s:String x:Key="Transitions.Delay">轉換延遲</s:String>
     <s:String x:Key="Transitions.FadeTo">淡入...</s:String>
     <s:String x:Key="Transitions.FadeTo.Frame">下一幀</s:String>

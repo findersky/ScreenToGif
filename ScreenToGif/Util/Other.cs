@@ -337,7 +337,7 @@ namespace ScreenToGif.Util
                 return (percentage.Value * 100d) / variable.Value;
 
             if (!percentage.HasValue && total.HasValue && variable.HasValue)
-                return (variable.Value * 100d) / total.Value;
+                return total > 0 || total < 0 ? (variable.Value * 100d) / total.Value : 0;
 
             if (!variable.HasValue && total.HasValue && percentage.HasValue)
                 return (percentage.Value * total.Value) / 100d;
@@ -378,57 +378,6 @@ namespace ScreenToGif.Util
             //    return Enumerable.Range(end, start - end + 1).ToList();
 
             return Enumerable.Range(start, quantity).ToList();
-        }
-
-        /// <summary>
-        /// Copies the List and saves the images in another folder.
-        /// </summary>
-        /// <param name="target">The List to copy</param>
-        /// <param name="usePadding">If true, the name of the frames will be adjusted in order to circunvent file ordering issue. For example: 010.png instead of 10.png if there's more than 999 frames.</param>
-        /// <returns>The copied list.</returns>
-        public static List<FrameInfo> CopyToEncode(this List<FrameInfo> target, bool usePadding = false)
-        {
-            #region Folder
-
-            var fileNameAux = Path.GetFileName(target[0].Path);
-
-            if (fileNameAux == null)
-                throw new ArgumentException("Impossible to get filename.");
-
-            var encodeFolder = Path.Combine(target[0].Path.Replace(fileNameAux, ""), "Encode " + DateTime.Now.ToString("yyyy-MM-dd hh-mm-ss"));
-
-            if (!Directory.Exists(encodeFolder))
-                Directory.CreateDirectory(encodeFolder);
-
-            #endregion
-
-            var newList = new List<FrameInfo>();
-
-            try
-            {
-                var pad = usePadding ? (target.Count - 1).ToString().Length : 0;
-
-                foreach (var frameInfo in target)
-                {
-                    //Changes the path of the image. Writes as an ordered list of files, replacing the old filenames.
-                    var filename = Path.Combine(encodeFolder, newList.Count.ToString().PadLeft(pad, '0') + ".png");
-                    //var filename = Path.Combine(encodeFolder, Path.GetFileName(frameInfo.Path) + ".png");
-
-                    //Copy the image to the folder.
-                    File.Copy(frameInfo.Path, filename, true);
-                    //File.Copy(frameInfo.Path, filename);
-
-                    //Create the new object and add to the list.
-                    newList.Add(new FrameInfo(filename, frameInfo.Delay));
-                }
-            }
-            catch (Exception ex)
-            {
-                LogWriter.Log(ex, "");
-                throw;
-            }
-
-            return newList;
         }
 
         /// <summary>
@@ -530,11 +479,22 @@ namespace ScreenToGif.Util
 
         #region Dependencies
 
-        public static bool IsFfmpegPresent()
+        public static bool IsFfmpegPresent(bool ignoreEnvironment = false)
         {
+            var realPath = UserSettings.All.FfmpegLocation;
+
+            //If the path is relative, File.Exists() was returning C:\\Windows\\System32\ffmpeg.exe when the app was lauched from the "Open with" context menu.
+            //So, in order to get the correct location, I need to combine the current base directory with the relative path.
+            if (!string.IsNullOrWhiteSpace(UserSettings.All.FfmpegLocation) && !Path.IsPathRooted(UserSettings.All.FfmpegLocation))
+                realPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, UserSettings.All.FfmpegLocation.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar));
+
             //File location already choosen or detected.
-            if (!string.IsNullOrWhiteSpace(UserSettings.All.FfmpegLocation) && File.Exists(UserSettings.All.FfmpegLocation))
+            if (!string.IsNullOrWhiteSpace(realPath) && File.Exists(realPath))
                 return true;
+
+            //If not found by direct/relative path, ignore the environment variables.
+            if (ignoreEnvironment)
+                return false;
 
             #region Check Environment Variables
 
@@ -563,11 +523,22 @@ namespace ScreenToGif.Util
             return false;
         }
 
-        public static bool IsGifskiPresent()
+        public static bool IsGifskiPresent(bool ignoreEnvironment = false)
         {
+            var realPath = UserSettings.All.GifskiLocation;
+
+            //If the path is relative, File.Exists() was returning C:\\Windows\\System32\Gifski.dll when the app was lauched from the "Open with" context menu.
+            //So, in order to get the correct location, I need to combine the current base directory with the relative path.
+            if (!string.IsNullOrWhiteSpace(UserSettings.All.GifskiLocation) && !Path.IsPathRooted(UserSettings.All.GifskiLocation))
+                realPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, UserSettings.All.GifskiLocation.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar));
+
             //File location already choosen or detected.
-            if (!string.IsNullOrWhiteSpace(UserSettings.All.GifskiLocation) && File.Exists(UserSettings.All.GifskiLocation))
+            if (!string.IsNullOrWhiteSpace(realPath) && File.Exists(realPath))
                 return true;
+
+            //If not found by direct/relative path, ignore the environment variables.
+            if (ignoreEnvironment)
+                return false;
 
             #region Check Environment Variables
 
@@ -588,6 +559,59 @@ namespace ScreenToGif.Util
                 }
 
                 UserSettings.All.GifskiLocation = Path.Combine(path, "gifski.dll");
+                return true;
+            }
+
+            #endregion
+
+            return false;
+        }
+
+        public static bool IsSharpDxPresent(bool ignoreEnvironment = false)
+        {
+            var realPath = UserSettings.All.SharpDxLocationFolder ?? "";
+
+            //So, in order to get the correct location, I need to combine the current base directory with the relative path.
+            if (!string.IsNullOrWhiteSpace(UserSettings.All.SharpDxLocationFolder) && !Path.IsPathRooted(UserSettings.All.SharpDxLocationFolder))
+                realPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, UserSettings.All.SharpDxLocationFolder.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar));
+
+            //All these libraries should exist:
+            //SharpDX.dll
+            //SharpDX.DXGI.dll
+            //SharpDX.Direct3D11.dll
+
+            //File location already choosen or detected.
+            if (realPath != null && File.Exists(Path.Combine(realPath, "SharpDX.dll")) && File.Exists(Path.Combine(realPath, "SharpDX.DXGI.dll")) && File.Exists(Path.Combine(realPath, "SharpDX.Direct3D11.dll")))
+            {
+                if (string.IsNullOrWhiteSpace(UserSettings.All.SharpDxLocationFolder))
+                    UserSettings.All.SharpDxLocationFolder = ".";
+
+                return true;
+            }
+
+            //If not found by direct/relative path, ignore the environment variables.
+            if (ignoreEnvironment)
+                return false;
+
+            #region Check Environment Variables
+
+            var variable = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine) + ";" +
+                Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.User);
+
+            foreach (var path in variable.Split(';').Where(w => !string.IsNullOrWhiteSpace(w)))
+            {
+                try
+                {
+                    if (!File.Exists(Path.Combine(path, "SharpDX.dll")) || !File.Exists(Path.Combine(path, "SharpDX.DXGI.dll")) || !File.Exists(Path.Combine(path, "SharpDX.Direct3D11.dll")))
+                        continue;
+                }
+                catch (Exception ex)
+                {
+                    //LogWriter.Log(ex, "Checking the path variables", path);
+                    continue;
+                }
+
+                UserSettings.All.GifskiLocation = path;
                 return true;
             }
 

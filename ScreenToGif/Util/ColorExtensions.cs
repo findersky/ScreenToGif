@@ -11,8 +11,7 @@ namespace ScreenToGif.Util
     {
         public static bool IsEnoughContrast(this Color color1, Color color2)
         {
-            Console.WriteLine(GetBrightness(color1) + ": " + GetBrightness2(color1) + " - " + GetBrightness2(color2) + " = " +
-                Math.Abs(GetBrightness2(color1) - GetBrightness2(color2)));
+            Console.WriteLine(GetBrightness(color1) + ": " + GetBrightness2(color1) + " - " + GetBrightness2(color2) + " = " + Math.Abs(GetBrightness2(color1) - GetBrightness2(color2)));
 
             return Math.Abs(GetBrightness2(color1) - GetBrightness2(color2)) > 125;
         }
@@ -268,9 +267,7 @@ namespace ScreenToGif.Util
             var delta = v - min;
 
             if (v == 0.0)
-            {
                 s = 0;
-            }
             else
                 s = delta / v;
 
@@ -314,9 +311,7 @@ namespace ScreenToGif.Util
             var delta = v - min;
 
             if (v == 0.0)
-            {
                 s = 0;
-            }
             else
                 s = delta / v;
 
@@ -354,7 +349,7 @@ namespace ScreenToGif.Util
         /// <returns></returns>
         public static Color ConvertHsvToRgb(double h, double s, double v, double alpha)
         {
-            double r = 0, g = 0, b = 0;
+            double r, g, b;
 
             if (s == 0)
             {
@@ -423,19 +418,45 @@ namespace ScreenToGif.Util
         /// Generates a list of colors with hues ranging from 0-360 and a saturation and value of 1.
         /// </summary>
         /// <returns>The List of Colors</returns>
-        public static List<Color> GenerateHsvSpectrum()
+        public static List<Color> GenerateHsvSpectrum(int count)
         {
-            var colorsList = new List<Color>(8);
+            var colorsList = new List<Color>();
 
-            for (var i = 0; i < 29; i++)
-            {
-                colorsList.Add(ConvertHsvToRgb(i * 12, 1, 1, 255));
-            }
+            var stop = 360d / count;
+            var isDecimal = stop % 1 > 0;
+            
+            for (var i = 0; i <= (isDecimal ? count - 1 : count); i++)
+                colorsList.Add(ConvertHsvToRgb(i * stop, 1, 1, 255));
 
-            colorsList.Add(ConvertHsvToRgb(0, 1, 1, 255));
+            if (isDecimal)
+                colorsList.Add(ConvertHsvToRgb(360, 1, 1, 255));
+
+            //for (var i = 0; i < 29; i++)
+            //    colorsList.Add(ConvertHsvToRgb(i * 12, 1, 1, 255));
+
+            //colorsList.Add(ConvertHsvToRgb(0, 1, 1, 255));
+            return colorsList;
+        }
+
+        /// <summary>
+        /// Generates a list of colors with transparency ranging from 0-255.
+        /// </summary>
+        public static List<Color> GenerateAlphaSpectrum(Color color, int count = 2)
+        {
+            var colorsList = new List<Color>();
+
+            var stop = 255d / count;
+            var isDecimal = stop % 1 > 0;
+
+            for (var i = 0; i <= (isDecimal ? count - 1 : count); i++)
+                colorsList.Add(Color.FromArgb((byte)(i * stop), color.R, color.G, color.B));
+
+            if (isDecimal)
+                colorsList.Add(Color.FromArgb(255, color.R, color.G, color.B));
+
+            colorsList.Reverse();
 
             return colorsList;
         }
     }
-
 }

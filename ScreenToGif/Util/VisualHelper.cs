@@ -4,6 +4,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 
 namespace ScreenToGif.Util
 {
@@ -23,6 +24,14 @@ namespace ScreenToGif.Util
                 return parent as TP;
 
             return GetParent<TP>(parent, i + 1);
+        }
+
+        public static T GetVisualParent<T>(this DependencyObject child) where T : Visual
+        {
+            while (child != null && !(child is T))
+                child = VisualTreeHelper.GetParent(child);
+
+            return child as T;
         }
 
         public static TP GetParent<TP>(DependencyObject child, Type stopWhen) where TP : Visual
@@ -125,6 +134,13 @@ namespace ScreenToGif.Util
 
             lock (LockObject)
                 return Native.Shell_NotifyIcon(command, ref data);
+        }
+
+        private static readonly Action EmptyDelegate = delegate { };
+
+        public static void Refresh(this UIElement uiElement)
+        {
+            uiElement?.Dispatcher?.Invoke(DispatcherPriority.Render, EmptyDelegate);
         }
     }
 }

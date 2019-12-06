@@ -1,6 +1,32 @@
 ﻿namespace ScreenToGif.Util
 {
     /// <summary>
+    /// Determines the app's theme.
+    /// </summary>
+    public enum AppTheme
+    {
+        Light,
+        Medium,
+        Dark,
+        VeryDark,
+    }
+
+    /// <summary>
+    /// The direction in which the window should be resized.
+    /// </summary>
+    public enum ResizeDirection
+    {
+        Left = 1,
+        Right = 2,
+        Top = 3,
+        TopLeft = 4,
+        TopRight = 5,
+        Bottom = 6,
+        BottomLeft = 7,
+        BottomRight = 8
+    }
+
+    /// <summary>
     /// Determines how the past bahaves.
     /// </summary>
     public enum PasteBehavior
@@ -93,35 +119,37 @@
         /// </summary>
         IncreaseDecreaseDelay = 7,
 
+        ScaleDelay = 8,
+
         /// <summary>
         /// Fade Transition Panel.
         /// </summary>
-        Fade = 8,
+        Fade = 9,
 
         /// <summary>
         /// Slide Transition Panel.
         /// </summary>
-        Slide = 9,
+        Slide = 10,
 
         /// <summary>
         /// Reduce Frame Count Panel.
         /// </summary>
-        ReduceFrames = 10,
+        ReduceFrames = 11,
 
         /// <summary>
         /// Load Recent Panel.
         /// </summary>
-        LoadRecent = 11,
+        LoadRecent = 12,
 
         /// <summary>
         /// Remove Duplicates Panel.
         /// </summary>
-        RemoveDuplicates = 12,
+        RemoveDuplicates = 13,
 
         /// <summary>
         /// Mouse Clicks Panel.
         /// </summary>
-        MouseClicks = 13,
+        MouseClicks = 14,
 
         /// <summary>
         /// Crop Panel.
@@ -149,34 +177,44 @@
         FreeDrawing = -5,
 
         /// <summary>
+        /// Shapes Panel.
+        /// </summary>
+        Shapes = -6,
+
+        /// <summary>
         /// Watermark Panel.
         /// </summary>
-        Watermark = -6,
+        Watermark = -7,
 
         /// <summary>
         /// Border Panel.
         /// </summary>
-        Border = -7,
+        Border = -8,
 
         /// <summary>
         /// Cinemagraph Panel.
         /// </summary>
-        Cinemagraph = -8,
+        Cinemagraph = -9,
 
         /// <summary>
         /// Progress Panel.
         /// </summary>
-        Progress = -9,
+        Progress = -10,
 
         /// <summary>
         /// Key Strokes Panel.
         /// </summary>
-        KeyStrokes = -10,
+        KeyStrokes = -11,
 
         /// <summary>
         /// Obfuscate Panel.
         /// </summary>
-        Obfuscate = -11,
+        Obfuscate = -12,
+
+        /// <summary>
+        /// Shadow Panel.
+        /// </summary>
+        Shadow = -13,
     }
 
     /// <summary>
@@ -316,8 +354,9 @@
     public enum DelayChangeType
     {
         Override,
-        IncreaseDecrease
-    }
+        IncreaseDecrease,
+      Scale
+   }
 
     /// <summary>
     /// Type of the gif encoder.
@@ -329,6 +368,15 @@
         PaintNet,
         FFmpeg,
         Gifski
+    }
+
+    /// <summary>
+    /// Type of the apng encoder.
+    /// </summary>
+    public enum ApngEncoderType
+    {
+        ScreenToGif,
+        FFmpeg,
     }
 
     /// <summary>
@@ -463,7 +511,7 @@
         IconLeftMouseUp,
         IconMiddleMouseDown,
         IconMiddleMouseUp,
-        IconDoubleClick
+        IconLeftDoubleClick
     }
 
 
@@ -516,8 +564,8 @@
         None = 0,
         ImgurAnonymous = 1,
         Imgur = 2,
-        GyfcatAnonymous = 3,
-        Gyfcat = 4,
+        GfycatAnonymous = 3,
+        Gfycat = 4,
         Yandex = 5,
     }
 
@@ -540,5 +588,32 @@
         WebcamRecorder = 2,
         BoardRecorder = 3,
         Editor = 4,
+    }
+
+    /// <summary>
+    /// The types of drawings.
+    /// </summary>
+    public enum DrawingModeType
+    {
+        None = 0,
+        Ink,
+        Select,
+        EraseByPoint,
+        EraseByObject,
+        Rectangle,
+        Circle,
+        Triangle,
+        Arrow,
+        Baloon,
+    }
+
+    /// <summary>
+    /// Delay update type.
+    /// </summary>
+    public enum DelayUpdateType
+    {
+        Override = 0,
+        IncreaseDecrease = 1,
+        Scale = 2,
     }
 }
