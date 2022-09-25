@@ -1,149 +1,188 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using ScreenToGif.Util;
+using System.Windows.Media;
 
-namespace ScreenToGif.Controls
+namespace ScreenToGif.Controls;
+
+public class SplitButton : ItemsControl
 {
-    /// <inheritdoc />
-    /// <summary>
-    /// A Menu/ComboBox with a default button.
-    /// </summary>
-    public class SplitButton : ImageMenuItem
+    #region Variables
+
+    private ExtendedButton _internalButton;
+    private Popup _mainPopup;
+
+    private ExtendedMenuItem _current;
+
+    #endregion
+
+    #region Dependency Properties
+
+    public static readonly DependencyProperty TextProperty = DependencyProperty.Register(nameof(Text), typeof(string), typeof(SplitButton), new PropertyMetadata(""));
+
+    public static readonly DependencyProperty IconProperty = DependencyProperty.Register(nameof(Icon), typeof(Brush), typeof(SplitButton));
+
+    public static readonly DependencyProperty ContentHeightProperty = DependencyProperty.Register(nameof(ContentHeight), typeof(double), typeof(SplitButton), new FrameworkPropertyMetadata(16d));
+
+    public static readonly DependencyProperty ContentWidthProperty = DependencyProperty.Register(nameof(ContentWidth), typeof(double), typeof(SplitButton), new FrameworkPropertyMetadata(16d));
+
+    public static readonly DependencyProperty SelectedIndexProperty = DependencyProperty.Register(nameof(SelectedIndex), typeof(int), typeof(SplitButton), new FrameworkPropertyMetadata(0,
+        FrameworkPropertyMetadataOptions.AffectsRender, SelectedIndex_ChangedCallback));
+
+    public static readonly DependencyProperty CommandProperty = DependencyProperty.Register(nameof(Command), typeof(ICommand), typeof(SplitButton), new FrameworkPropertyMetadata(null));
+        
+    public static readonly DependencyProperty CommandParameterProperty = DependencyProperty.Register(nameof(CommandParameter), typeof(object), typeof(SplitButton), new FrameworkPropertyMetadata(null));
+
+    public static readonly DependencyProperty TextWrappingProperty = DependencyProperty.Register(nameof(TextWrapping), typeof(TextWrapping), typeof(SplitButton), new FrameworkPropertyMetadata(TextWrapping.NoWrap,
+        FrameworkPropertyMetadataOptions.AffectsMeasure | FrameworkPropertyMetadataOptions.AffectsRender));
+
+    #endregion
+
+    #region Properties
+
+    public string Text
     {
-        #region Variables
+        get => (string)GetValue(TextProperty);
+        set => SetValue(TextProperty, value);
+    }
 
-        private Grid _internalGrid;
-        private Popup _mainPopup;
-        private StackPanel _innerStackPanel;
+    /// <summary>
+    /// The icon of the button as a Brush
+    /// </summary>
+    [Description("The icon of the button as a Brush.")]
+    public Brush Icon
+    {
+        get => (Brush)GetValue(IconProperty);
+        set => SetCurrentValue(IconProperty, value);
+    }
 
-        private ImageMenuItem _current;
+    /// <summary>
+    /// The height of the button content.
+    /// </summary>
+    [Description("The height of the button content."), Category("Common")]
+    public double ContentHeight
+    {
+        get => (double)GetValue(ContentHeightProperty);
+        set => SetCurrentValue(ContentHeightProperty, value);
+    }
 
-        #endregion
+    /// <summary>
+    /// The width of the button content.
+    /// </summary>
+    [Description("The width of the button content."), Category("Common")]
+    public double ContentWidth
+    {
+        get => (double)GetValue(ContentWidthProperty);
+        set => SetCurrentValue(ContentWidthProperty, value);
+    }
 
-        #region Dependency Properties
+    /// <summary>
+    /// The index of selected item.
+    /// </summary>
+    [Description("The index of selected item."), Category("Common")]
+    public int SelectedIndex
+    {
+        get => (int)GetValue(SelectedIndexProperty);
+        set => SetCurrentValue(SelectedIndexProperty, value);
+    }
 
-        public static readonly DependencyProperty SelectedIndexProperty = DependencyProperty.Register("SelectedIndex", typeof(int), typeof(SplitButton), new FrameworkPropertyMetadata(0,
-            FrameworkPropertyMetadataOptions.AffectsRender, SelectedIndex_ChangedCallback));
+    /// <summary>
+    /// Gets or sets the command associated with the menu item.
+    /// </summary>
+    [Category("Action")]
+    public ICommand Command
+    {
+        get => (ICommand) GetValue(CommandProperty);
+        set => SetValue(CommandProperty, value);
+    }
 
-        public static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(SplitButton), new FrameworkPropertyMetadata(""));
+    /// <summary>
+    /// Gets or sets the parameter to pass to the <see cref="Command"/> property.
+    /// </summary>
+    [Category("Action")]
+    public object CommandParameter
+    {
+        get => GetValue(CommandParameterProperty);
+        set => SetValue(CommandParameterProperty, value);
+    }
 
-        #endregion
+    public TextWrapping TextWrapping
+    {
+        get => (TextWrapping)GetValue(TextWrappingProperty);
+        set => SetValue(TextWrappingProperty, value);
+    }
 
-        #region Properties
+    #endregion
 
-        /// <summary>
-        /// The index of selected item.
-        /// </summary>
-        [Description("The index of selected item."), Category("Common")]
-        public int SelectedIndex
-        {
-            get => (int)GetValue(SelectedIndexProperty);
-            set => SetCurrentValue(SelectedIndexProperty, value);
-        }
 
-        /// <summary>
-        /// The text of the button.
-        /// </summary>
-        [Description("The text of the button."), Category("Common")]
-        public string Text
-        {
-            get => (string)GetValue(TextProperty);
-            set => SetCurrentValue(TextProperty, value);
-        }
+    static SplitButton()
+    {
+        DefaultStyleKeyProperty.OverrideMetadata(typeof(SplitButton), new FrameworkPropertyMetadata(typeof(SplitButton)));
+    }
 
-        /// <summary>
-        /// The TextWrapping property controls whether or not text wraps 
-        /// when it reaches the flow edge of its containing block box. 
-        /// </summary>
-        public TextWrapping TextWrapping
-        {
-            get => (TextWrapping)GetValue(TextWrappingProperty);
-            set => SetValue(TextWrappingProperty, value);
-        }
+    public override void OnApplyTemplate()
+    {
+        base.OnApplyTemplate();
 
-        #endregion
+        _internalButton = Template.FindName("ActionButton", this) as ExtendedButton;
+        _mainPopup = Template.FindName("Popup", this) as Popup;
 
-        static SplitButton()
-        {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(SplitButton), new FrameworkPropertyMetadata(typeof(SplitButton)));
-        }
+        PrepareMainAction(this);
 
-        public override void OnApplyTemplate()
-        {
-            base.OnApplyTemplate();
+        //Raises the click event.
+        _internalButton.Click += (sender, args) => _current?.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
 
-            _internalGrid = Template.FindName("InternalGrid", this) as Grid;
-            _mainPopup = Template.FindName("Popup", this) as Popup;
-            _innerStackPanel = Template.FindName("InnerStackPanel", this) as StackPanel;
-
-            if (_internalGrid == null)
-                return;
-
-            _internalGrid.MouseDown += OnClick;
-
-            PrepareMainAction(this);
-
-            //Close on click.
-            foreach (var item in _innerStackPanel.Children.OfType<ImageMenuItem>().ToList())
-                item.Click += (sender, args) =>
-                {
-                    _mainPopup.IsOpen = false;
-
-                    if (sender is ImageMenuItem menu)
-                    {
-                        var index = _innerStackPanel.Children.IndexOf(menu);
-
-                        if (index != -1)
-                            SelectedIndex = index;
-                    }
-                };
-        }
-
-        protected override void OnMouseEnter(MouseEventArgs e)
-        {
-            //For some reason (maybe because this control extends a MenuItem), a focus was being set to this control on mouse enter/hover.
-            //So, I had to override this method, avoiding to call the base method.
-            //base.OnMouseEnter(e);
-        }
-
-        private static void SelectedIndex_ChangedCallback(DependencyObject o, DependencyPropertyChangedEventArgs e)
-        {
-            if (!(o is SplitButton split) || split._innerStackPanel == null)
-                return;
-
-            split.PrepareMainAction(split);
-        }
-
-        private void OnClick(object sender, RoutedEventArgs e)
-        {
-            Command?.Execute(null);
-
-            _current?.RaiseEvent(new RoutedEventArgs(ImageMenuItem.ClickEvent));
-        }
-
-        private void PrepareMainAction(SplitButton split)
-        {
-            if (split.SelectedIndex < 0)
-                return;
-
-            var list = split._innerStackPanel.Children.OfType<ImageMenuItem>().ToList();
-
-            if (split.SelectedIndex > list.Count - 1)
+        //Close on click.
+        foreach (var item in Items.OfType<ExtendedMenuItem>().ToList())
+            item.Click += (sender, args) =>
             {
-                split.SelectedIndex = list.Count - 1;
-                return;
-            }
+                _mainPopup.IsOpen = false;
 
-            split.Image = list[split.SelectedIndex].Image.XamlClone();
-            split.Text = list[split.SelectedIndex].Header as string;
-            split.Command = list[split.SelectedIndex].Command;
-            _internalGrid.ToolTip = list[split.SelectedIndex].Header;
+                if (!(sender is ExtendedMenuItem menu))
+                    return;
 
-            _current = list[split.SelectedIndex];
+                var index = Items.OfType<ExtendedMenuItem>().Where(w => (w.Tag as string) != "I").ToList().IndexOf(menu);
+
+                if (index != -1)
+                    SelectedIndex = index;
+            };
+    }
+
+
+    private static void SelectedIndex_ChangedCallback(DependencyObject o, DependencyPropertyChangedEventArgs e)
+    {
+        if (!(o is SplitButton split) || !split.IsLoaded)
+            return;
+
+        split.PrepareMainAction(split);
+    }
+
+    private void PrepareMainAction(SplitButton split)
+    {
+        if (split.SelectedIndex < 0)
+            return;
+
+        //Ignore children with the Tag == "I".
+        var list = split.Items.OfType<ExtendedMenuItem>().Where(w => (w.Tag as string) != "I").ToList();
+
+        if (split.SelectedIndex > list.Count - 1)
+        {
+            split.SelectedIndex = list.Count - 1;
+            return;
         }
+
+        //I'm using the Tag property to store the resource ID.
+        if (list[split.SelectedIndex].Tag is string reference)
+            split.SetResourceReference(TextProperty, reference);
+        else
+            split.Text = list[split.SelectedIndex].Header as string;
+
+        split.Icon = list[split.SelectedIndex].Icon;
+        split.Command = list[split.SelectedIndex].Command;
+            
+        _current = list[split.SelectedIndex];
     }
 }

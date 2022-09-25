@@ -1,27 +1,23 @@
-﻿using System;
-using ScreenToGif.Util;
+using System;
+using ScreenToGif.Domain.Enums;
+using ScreenToGif.Domain.Interfaces;
 
-namespace ScreenToGif.Cloud
+namespace ScreenToGif.Cloud;
+
+public class CloudFactory
 {
-    public class CloudFactory
+    public static IUploader CreateCloud(UploadDestinations service)
     {
-        public static ICloud CreateCloud(UploadService service)
+        switch (service)
         {
-            switch (service)
-            {
-                case UploadService.ImgurAnonymous:
-                    return new Imgur.Imgur();
-                case UploadService.Imgur:
-                    return new Imgur.Imgur(false);
-                case UploadService.GfycatAnonymous:
-                    return new Gfycat();
-                //case UploadService.Gfycat:
-                //    return new Gfycat();
-                case UploadService.Yandex:
-                    return new YandexDisk.YandexDisk(UserSettings.All.YandexDiskOAuthToken);
-            }
-
-            throw new NotImplementedException();
+            case UploadDestinations.Imgur:
+                return new Imgur();
+            case UploadDestinations.Gfycat:
+                return new Gfycat();
+            case UploadDestinations.Yandex:
+                return new YandexDisk();
         }
+
+        throw new NotImplementedException();
     }
 }

@@ -1,17 +1,18 @@
-﻿<Application x:Class="ScreenToGif.App"
+<Application x:Class="ScreenToGif.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:c="clr-namespace:ScreenToGif.Util.Converters"
+             xmlns:c="clr-namespace:ScreenToGif.Util.Converters;assembly=ScreenToGif.Util"
+             xmlns:cx="clr-namespace:ScreenToGif.Util.Converters"
              xmlns:n="clr-namespace:ScreenToGif.Controls"
-             xmlns:m="clr-namespace:ScreenToGif.Model"
-             ShutdownMode="OnExplicitShutdown" Startup="Application_Startup" Exit="App_OnExit" 
-             DispatcherUnhandledException="App_OnDispatcherUnhandledException">
+             xmlns:viewModel="clr-namespace:ScreenToGif.ViewModel"
+             ShutdownMode="OnExplicitShutdown" Startup="App_Startup" Exit="App_Exit" 
+             DispatcherUnhandledException="App_DispatcherUnhandledException">
 
     <Application.Resources>
         <ResourceDictionary>
 
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Resources/IconSet.xaml"/>
+                <ResourceDictionary Source="/Resources/Vectors.xaml"/>
                 <ResourceDictionary Source="/Resources/Glyphs.xaml"/>
                 <ResourceDictionary Source="/Resources/Backgrounds.xaml"/>
                 <ResourceDictionary Source="/Resources/Commands.xaml"/>
@@ -22,7 +23,7 @@
                 <ResourceDictionary Source="/Themes/Colors/Dark.xaml"/>
                 <ResourceDictionary Source="/Themes/Colors/Medium.xaml"/>
                 <ResourceDictionary Source="/Themes/Colors/Light.xaml"/>
-
+                
                 <ResourceDictionary Source="/Themes/DataGrid.xaml"/>
                 <ResourceDictionary Source="/Themes/Button.xaml"/>
                 <ResourceDictionary Source="/Themes/Common.xaml"/>
@@ -33,10 +34,14 @@
                 <ResourceDictionary Source="/Resources/Localization/StringResources.cs.xaml"/>
                 <ResourceDictionary Source="/Resources/Localization/StringResources.da.xaml"/>
                 <ResourceDictionary Source="/Resources/Localization/StringResources.de.xaml"/>
+                <ResourceDictionary Source="/Resources/Localization/StringResources.el.xaml"/>
                 <ResourceDictionary Source="/Resources/Localization/StringResources.es-AR.xaml"/>
                 <ResourceDictionary Source="/Resources/Localization/StringResources.es.xaml"/>
+                <ResourceDictionary Source="/Resources/Localization/StringResources.fi.xaml"/>
                 <ResourceDictionary Source="/Resources/Localization/StringResources.fr.xaml"/>
                 <ResourceDictionary Source="/Resources/Localization/StringResources.ja.xaml"/>
+                <ResourceDictionary Source="/Resources/Localization/StringResources.he.xaml"/>
+                <ResourceDictionary Source="/Resources/Localization/StringResources.hu.xaml"/>
                 <ResourceDictionary Source="/Resources/Localization/StringResources.ko.xaml"/>
                 <ResourceDictionary Source="/Resources/Localization/StringResources.it.xaml"/>
                 <ResourceDictionary Source="/Resources/Localization/StringResources.nl.xaml"/>
@@ -44,6 +49,7 @@
                 <ResourceDictionary Source="/Resources/Localization/StringResources.pt.xaml"/>
                 <ResourceDictionary Source="/Resources/Localization/StringResources.pt-PT.xaml"/>
                 <ResourceDictionary Source="/Resources/Localization/StringResources.ru.xaml"/>
+                <ResourceDictionary Source="/Resources/Localization/StringResources.sw.xaml"/>
                 <ResourceDictionary Source="/Resources/Localization/StringResources.sv.xaml"/>
                 <ResourceDictionary Source="/Resources/Localization/StringResources.tr.xaml"/>
                 <ResourceDictionary Source="/Resources/Localization/StringResources.uk.xaml"/>
@@ -53,7 +59,7 @@
                 <ResourceDictionary Source="/Resources/Localization/StringResources.en.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <m:ApplicationViewModel x:Key="AppViewModel"/>
+            <viewModel:ApplicationViewModel x:Key="AppViewModel"/>
 
             <!--Converter-->
             <BooleanToVisibilityConverter x:Key="Bool2Visibility"/>
@@ -63,57 +69,36 @@
             <c:EnumToInt x:Key="EnumToInt"/>
             <c:ColorToBrush x:Key="ColorToBrushConverter"/>
             <c:ShortcutSelection x:Key="ShortcutSelectionConverter"/>
-            <c:IntToBool x:Key="BoolToInt"/>
             <c:IntToVisibility x:Key="IntToVisibility"/>
             <c:InvertedIntToVisibility x:Key="InvertedIntToVisibility"/>
             <c:EnumToVisibility x:Key="EnumToVisibility"/>
             <c:InvertedBool x:Key="InvertedBool"/>
-            <c:CommandToInputGestureText x:Key="CommandToInputGestureText"/>
-
+            <cx:CommandToInputGestureText x:Key="CommandToInputGestureText"/>
+            <c:EnumToBool x:Key="EnumToBool"/>
+            <c:InvertedEnumToBool x:Key="InvertedEnumToBool"/>
+            <c:BoolAndToVisibility x:Key="BoolAndToVisibility"/>
+            <c:ContentToVisibility x:Key="ContentToVisibility"/>
+            <c:UriToBitmap x:Key="UriToBitmapConverter"/>
+            
             <!--Effects-->
-            <DropShadowEffect x:Key="Shadow.Black.Tiny" ShadowDepth="0" Color="#FF000000" Opacity=".15" BlurRadius="2" RenderingBias="Quality"/>
-            <DropShadowEffect x:Key="Shadow.Black.Small" ShadowDepth="0" Color="#FF000000" Opacity=".2" BlurRadius="2" RenderingBias="Performance"/>
-            <DropShadowEffect x:Key="Shadow.Black" ShadowDepth="0" Color="#FF000000" Opacity="1" BlurRadius="2" RenderingBias="Quality"/>
-            <DropShadowEffect x:Key="Shadow.Black.Dark" ShadowDepth="0" Color="#FF000000" Opacity=".5" BlurRadius="2" RenderingBias="Quality"/>
-            <DropShadowEffect x:Key="Shadow.Black.Large" ShadowDepth="0" Color="#FF000000" Opacity=".35" BlurRadius="5" RenderingBias="Quality"/>
-
-            <DropShadowEffect x:Key="Shadow.Grey" ShadowDepth="0" Color="#FFBEBEBE" Opacity=".5" BlurRadius="3" RenderingBias="Quality"/>
-
-            <DropShadowEffect x:Key="Shadow.Foreground.Large" ShadowDepth="0" Color="{Binding ForegroundColor, RelativeSource={RelativeSource TemplatedParent}}" Opacity=".35" BlurRadius="5" RenderingBias="Quality"/>
-            <DropShadowEffect x:Key="Shadow.Foreground" ShadowDepth="0" Color="{Binding ForegroundColor, RelativeSource={RelativeSource TemplatedParent}}" Opacity=".35" BlurRadius="3" RenderingBias="Quality"/>
-            <DropShadowEffect x:Key="Shadow.Foreground.Normal" ShadowDepth="0" Color="{Binding ForegroundColor, RelativeSource={RelativeSource TemplatedParent}}" Opacity=".2" BlurRadius="3" RenderingBias="Quality"/>
-            <DropShadowEffect x:Key="Shadow.Foreground.Small" ShadowDepth="0" Color="{Binding ForegroundColor, RelativeSource={RelativeSource TemplatedParent}}" Opacity=".2" BlurRadius="2" RenderingBias="Quality"/>
-
-            <DropShadowEffect x:Key="Shadow.Background.Tiny" ShadowDepth="0" Color="{Binding BackgroundColor, RelativeSource={RelativeSource TemplatedParent}}" Opacity=".1" BlurRadius="1" RenderingBias="Quality"/>
-            <DropShadowEffect x:Key="Shadow.Background.Small" ShadowDepth="0" Color="{Binding BackgroundColor, RelativeSource={RelativeSource TemplatedParent}}" Opacity=".2" BlurRadius="2" RenderingBias="Quality"/>
-            <DropShadowEffect x:Key="Shadow.Background" ShadowDepth="0" Color="{Binding BackgroundColor, RelativeSource={RelativeSource TemplatedParent}}" Opacity=".35" BlurRadius="3" RenderingBias="Quality"/>
-            <DropShadowEffect x:Key="Shadow.Background.Large" ShadowDepth="0" Color="{Binding BackgroundColor, RelativeSource={RelativeSource TemplatedParent}}" Opacity=".35" BlurRadius="5" RenderingBias="Quality"/>
-
-            <DropShadowEffect x:Key="Shadow.Border.Tiny" ShadowDepth="0" Color="{Binding BorderColor, RelativeSource={RelativeSource TemplatedParent}}" Opacity=".15" BlurRadius="2" RenderingBias="Quality"/>
-            <DropShadowEffect x:Key="Shadow.Border.Small" ShadowDepth="0" Color="{Binding BorderColor, RelativeSource={RelativeSource TemplatedParent}}" Opacity=".2" BlurRadius="3" RenderingBias="Quality"/>
-            <DropShadowEffect x:Key="Shadow.Border" ShadowDepth="0" Color="{Binding BorderColor, RelativeSource={RelativeSource TemplatedParent}}" Opacity=".35" BlurRadius="3" RenderingBias="Quality"/>
-            <DropShadowEffect x:Key="Shadow.Border.Large" ShadowDepth="0" Color="{Binding BorderColor, RelativeSource={RelativeSource TemplatedParent}}" Opacity=".4" BlurRadius="5" RenderingBias="Quality"/>
-            <DropShadowEffect x:Key="Shadow.Border.Dark" ShadowDepth="0" Color="{Binding BorderColor, RelativeSource={RelativeSource TemplatedParent}}" Opacity=".5" BlurRadius="3" RenderingBias="Quality"/>
-
-            <DropShadowEffect x:Key="Glow.Foreground.Large" ShadowDepth="0" Color="WhiteSmoke" Opacity="1" BlurRadius="5" RenderingBias="Quality"/>
             <DropShadowEffect x:Key="Shadow.Invariant" ShadowDepth="0" Color="Transparent" Opacity="0" BlurRadius="0" RenderingBias="Performance"/>
-            <BlurEffect x:Key="Blur" Radius="1" RenderingBias="Quality" KernelType="Gaussian"/>
 
             <!--Notification Icon-->
             <n:NotifyIcon x:Key="NotifyIcon" IconSource="/Resources/Logo.ico" DataContext="{StaticResource AppViewModel}" NotifyToolTipText="ScreenToGif" Visibility="Collapsed" 
                           LeftClickCommand="{Binding TrayLeftClick}" DoubleLeftClickCommand="{Binding TrayDoubleLeftClick}" MiddleClickCommand="{Binding TrayMiddleClick}">
                 <n:NotifyIcon.ContextMenu>
+                    
                     <ContextMenu>
-                        <n:ImageMenuItem Header="{DynamicResource S.NewRecording}" Image="{StaticResource Vector.Record.New}" Command="{Binding OpenRecorder}" InputGestureText="{Binding RecorderGesture, UpdateSourceTrigger=PropertyChanged}"/>
-                        <n:ImageMenuItem Header="{DynamicResource S.NewWebcamRecording}" Image="{StaticResource Vector.Camera.New}" Command="{Binding OpenWebcamRecorder}" InputGestureText="{Binding WebcamRecorderGesture, UpdateSourceTrigger=PropertyChanged}"/>
-                        <n:ImageMenuItem Header="{DynamicResource S.NewBoardRecording}" Image="{StaticResource Vector.Board.New}" Command="{Binding OpenBoardRecorder}" InputGestureText="{Binding BoardRecorderGesture, UpdateSourceTrigger=PropertyChanged}"/>
+                        <n:ExtendedMenuItem Header ="{StaticResource S.NewRecording}" Icon="{StaticResource Vector.Record.New}" Command="{Binding OpenRecorder}" InputGestureText="{Binding RecorderGesture, UpdateSourceTrigger=PropertyChanged}" Tag="S.NewRecording"/>
+                        <n:ExtendedMenuItem Header ="{StaticResource S.NewWebcamRecording}" Icon="{StaticResource Vector.Camera.New}" Command="{Binding OpenWebcamRecorder}" InputGestureText="{Binding WebcamRecorderGesture, UpdateSourceTrigger=PropertyChanged}" Tag="S.NewWebcamRecording"/>
+                        <n:ExtendedMenuItem Header="{StaticResource S.NewBoardRecording}" Icon="{StaticResource Vector.Board.New}" Command="{Binding OpenBoardRecorder}" InputGestureText="{Binding BoardRecorderGesture, UpdateSourceTrigger=PropertyChanged}" Tag="S.NewBoardRecording"/>
                         <Separator/>
-                        <n:ImageMenuItem Header="{DynamicResource Editor}" Image="{StaticResource Vector.Editor}" Command="{Binding OpenEditor}" InputGestureText="{Binding EditorGesture, UpdateSourceTrigger=PropertyChanged}"/>
-                        <n:ImageMenuItem Header="{DynamicResource Options}" Image="{StaticResource Vector.Options}" Command="{Binding OpenOptions}" InputGestureText="{Binding OptionsGesture, UpdateSourceTrigger=PropertyChanged}"/>
-                        <n:ImageMenuItem Header="{DynamicResource S.Feedback.Feedback}" Image="{StaticResource Vector.Application}" Command="{Binding OpenFeedback}"/>
-                        <n:ImageMenuItem Header="{DynamicResource S.Troubleshoot.Title}" Image="{StaticResource Vector.Warning}" Command="{Binding OpenTroubleshoot}"/>
+                        <n:ExtendedMenuItem Header="{StaticResource S.StartUp.Editor}" Icon="{StaticResource Vector.Editor}" Command="{Binding OpenEditor}" InputGestureText="{Binding EditorGesture, UpdateSourceTrigger=PropertyChanged}" Tag="S.StartUp.Editor"/>
+                        <n:ExtendedMenuItem Header="{StaticResource S.StartUp.Options}" Icon="{StaticResource Vector.Options}" Command="{Binding OpenOptions}" InputGestureText="{Binding OptionsGesture, UpdateSourceTrigger=PropertyChanged}" Tag="S.StartUp.Options"/>
+                        <n:ExtendedMenuItem Header="{StaticResource S.Feedback.Feedback}" Icon="{StaticResource Vector.Application}" Command="{Binding OpenFeedback}" Tag="S.Feedback.Feedback"/>
+                        <n:ExtendedMenuItem Header="{StaticResource S.Troubleshoot.Title}" Icon="{StaticResource Vector.Warning}" Command="{Binding OpenTroubleshoot}" Tag="S.Troubleshoot.Title"/>
                         <Separator/>
-                        <n:ImageMenuItem Header="{DynamicResource S.Exit}" Image="{StaticResource Vector.Close}" Command="{Binding ExitApplication}" InputGestureText="{Binding ExitGesture, UpdateSourceTrigger=PropertyChanged}"/>
+                        <n:ExtendedMenuItem Header="{StaticResource S.Exit}" Icon="{StaticResource Vector.Close}" Command="{Binding ExitApplication}" InputGestureText="{Binding ExitGesture, UpdateSourceTrigger=PropertyChanged}" Tag="S.Exit"/>
                     </ContextMenu>
                 </n:NotifyIcon.ContextMenu>
             </n:NotifyIcon>
@@ -194,15 +179,17 @@
             <!--ToolTip-->
             <Style TargetType="{x:Type ToolTip}">
                 <Setter Property="Foreground" Value="{DynamicResource Element.Foreground.Medium}"/>
+                <Setter Property="Background" Value="{DynamicResource Element.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource Element.Border}"/>
                 <Setter Property="MinWidth" Value="20"/>
                 <Setter Property="SnapsToDevicePixels" Value="True"/>
-                <Setter Property="Effect" Value="{DynamicResource Shadow.Grey}"/>
+                <Setter Property="Effect" Value="{DynamicResource Shadow.Border.Dark}"/>
 
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ToolTip}">
-                            <Border BorderBrush="{DynamicResource Element.Border}" BorderThickness="1" Margin="2" Background="{DynamicResource Element.Background}" Padding="5">
-                                <ContentPresenter Content="{TemplateBinding Content}" Width="Auto" HorizontalAlignment="Center"/>
+                            <Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" Margin="2" Background="{TemplateBinding Background}" Padding="5" TextBlock.Foreground="{TemplateBinding Foreground}">
+                                <ContentPresenter Content="{TemplateBinding Content}" Width="Auto" HorizontalAlignment="Center" TextBlock.Foreground="{TemplateBinding Foreground}"/>
                             </Border>
                         </ControlTemplate>
                     </Setter.Value>
@@ -216,7 +203,7 @@
                 <Setter Property="Grid.IsSharedSizeScope" Value="True"/>
                 <Setter Property="Placement" Value="Bottom"/>
                 <Setter Property="HorizontalOffset" Value="-5"/>
-                <Setter Property="Effect" Value="{DynamicResource Shadow.Grey}"/>
+                <Setter Property="Effect" Value="{DynamicResource Shadow.Border.Dark}"/>
                 <Setter Property="Background" Value="{DynamicResource Element.Background}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource Element.Border}"/>
                 <Setter Property="Foreground" Value="{DynamicResource Element.Foreground.Medium}"/>
@@ -454,6 +441,10 @@
 
             <!--ScrollViewer-->
             <Style TargetType="{x:Type ScrollViewer}">
+                <!--<Setter Property="PanningRatio" Value="0.01"/>
+                <Setter Property="PanningDeceleration" Value="0.1"/>
+                <Setter Property="CanContentScroll" Value="True"/>-->
+
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ScrollViewer}">
@@ -637,7 +628,6 @@
             </Style>
 
             <Style x:Key="ExpanderDownHeaderStyle" TargetType="{x:Type ToggleButton}">
-                <Setter Property="Height" Value="22"/>
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="VerticalContentAlignment" Value="Center"/>
 
@@ -758,18 +748,22 @@
                                     <TickBar x:Name="TopTick" Grid.Row="0" Fill="{TemplateBinding BorderBrush}" TickFrequency="1" Height="4" Margin="0,0,0,2" Placement="Top" Visibility="Collapsed"/>
                                     <TickBar x:Name="BottomTick" Grid.Row="2" Fill="{TemplateBinding BorderBrush}" TickFrequency="1" Height="4" Margin="0,1,0,0" Placement="Bottom" Visibility="Collapsed"/>
 
-                                    <Border x:Name="TrackBorder" Grid.Row="1" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" Height="3" VerticalAlignment="Center" Margin="4,0"/>
+                                    <Border x:Name="TrackBorder" Grid.Row="1" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" Height="3" VerticalAlignment="Center" Margin="4,0">
+                                        <Canvas Margin="-6,-1">
+                                            <Rectangle x:Name="PART_SelectionRange" Fill="{DynamicResource Brush.ProgressBar.Info}" Height="4.0" Visibility="Hidden"/>
+                                        </Canvas>
+                                    </Border>
 
                                     <Track Grid.Row="1" x:Name="PART_Track">
                                         <Track.DecreaseRepeatButton>
-                                            <RepeatButton x:Name="HorizontalTrackLargeChangeDecreaseRepeatButton" Template="{StaticResource Template.RepeatButton.Simple}" Background="Transparent"/>
+                                            <RepeatButton x:Name="HorizontalTrackLargeChangeDecreaseRepeatButton" Template="{StaticResource Template.RepeatButton.Simple}" Background="Transparent" IsTabStop="False"/>
                                         </Track.DecreaseRepeatButton>
                                         <Track.IncreaseRepeatButton>
-                                            <RepeatButton x:Name="HorizontalTrackLargeChangeIncreaseRepeatButton" Template="{StaticResource Template.RepeatButton.Simple}" Background="Transparent"/>
+                                            <RepeatButton x:Name="HorizontalTrackLargeChangeIncreaseRepeatButton" Template="{StaticResource Template.RepeatButton.Simple}" Background="Transparent" IsTabStop="False"/>
                                         </Track.IncreaseRepeatButton>
 
                                         <Track.Thumb>
-                                            <Thumb x:Name="HorizontalThumb" Height="18" IsTabStop="True" Width="10" Template="{StaticResource Template.Slider.Thumb.Horizontal}"/>
+                                            <Thumb x:Name="HorizontalThumb" Height="18" Width="10" Template="{StaticResource Template.Slider.Thumb.Horizontal}"/>
                                         </Track.Thumb>
                                     </Track>
                                 </Grid>
@@ -817,7 +811,7 @@
 
             <!--ProgressBar-->
             <Style TargetType="{x:Type ProgressBar}">
-                <Setter Property="Foreground" Value="{DynamicResource Brush.ProgressBar.Progress}"/>
+                <Setter Property="Foreground" Value="{DynamicResource Brush.ProgressBar.Primary}"/>
                 <Setter Property="Background" Value="{DynamicResource Element.Background.Back}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource Element.Border}"/>
                 <Setter Property="BorderThickness" Value="1"/>
@@ -1057,6 +1051,54 @@
                 </Setter>
             </Style>
 
+            <!--PasswordBox Style-->
+            <Style TargetType="{x:Type PasswordBox}">
+                <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                <Setter Property="VerticalAlignment" Value="Stretch"/>
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Foreground" Value="{DynamicResource Element.Foreground}"/>
+                <Setter Property="Background" Value="{DynamicResource Element.Background}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource Element.Border}"/>
+                <Setter Property="Padding" Value="2"/>
+                <Setter Property="MinHeight" Value="23"/>
+                <Setter Property="KeyboardNavigation.TabNavigation" Value="None"/>
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                <Setter Property="AllowDrop" Value="True"/>
+                <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst"/>
+                <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
+
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type PasswordBox}">
+                            <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" 
+                                    VerticalAlignment="{TemplateBinding VerticalAlignment}" HorizontalAlignment="{TemplateBinding HorizontalAlignment}" SnapsToDevicePixels="True"
+                                    Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" MinWidth="{TemplateBinding MinWidth}" MinHeight="{TemplateBinding MinHeight}">
+                                <Grid x:Name="InnerGrid">
+                                    <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalScrollBarVisibility="Hidden" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                </Grid>
+                            </Border>
+
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" TargetName="border" Value="0.7"/>
+                                </Trigger>
+
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource Element.Border.Hover}"/>
+                                </Trigger>
+
+                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                    <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource Element.Border.Pressed}"/>
+                                    <Setter Property="Background" TargetName="border" Value="{DynamicResource Element.Background.Focused}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
 
             <!--Custom styles-->
 
@@ -1081,6 +1123,91 @@
                     </Setter.Value>
                 </Setter>
 
+                <Setter Property="ItemContainerStyle">
+                    <Setter.Value>
+                        <Style TargetType="{x:Type ListViewItem}">
+                            <Setter Property="SnapsToDevicePixels" Value="True"/>
+                            <Setter Property="Padding" Value="4,1"/>
+                            <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+                            <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderBrush" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="1"/>
+                            <Setter Property="FocusVisualStyle" Value="{DynamicResource Style.FocusVisual.NoMargin}"/>
+
+                            <Style.Triggers>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsMouseOver" Value="True"/>
+                                    </MultiTrigger.Conditions>
+
+                                    <Setter Property="Background" Value="{DynamicResource Item.MouseOver.Background}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource Item.MouseOver.Border}"/>
+                                </MultiTrigger>
+
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="Selector.IsSelectionActive" Value="False"/>
+                                        <Condition Property="IsSelected" Value="True"/>
+                                    </MultiTrigger.Conditions>
+
+                                    <Setter Property="Background" Value="{DynamicResource Item.SelectedInactive.Background}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedInactive.Border}"/>
+                                </MultiTrigger>
+
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="Selector.IsSelectionActive" Value="True"/>
+                                        <Condition Property="IsSelected" Value="True"/>
+                                    </MultiTrigger.Conditions>
+
+                                    <Setter Property="Background" Value="{DynamicResource Item.SelectedActive.Background}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource Item.SelectedActive.Border}"/>
+                                </MultiTrigger>
+
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.7"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+                
+                <Setter Property="ItemTemplate">
+                    <Setter.Value>
+                        <DataTemplate>
+                            <Border x:Name="Bd" BorderBrush="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=BorderBrush}"
+                                    BorderThickness="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=BorderThickness}"
+                                    Background="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Background}" MinWidth="80"
+                                    Padding="{Binding RelativeSource={RelativeSource AncestorType=ListViewItem}, Path=Padding}" SnapsToDevicePixels="True">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <Viewbox x:Name="ViewBoxInternal" VerticalAlignment="Center" HorizontalAlignment="Center" Stretch="Uniform" StretchDirection="Both" MaxWidth="100" MaxHeight="100" Effect="{x:Null}">
+                                        <Image Source="{Binding Image, Converter={StaticResource UriToBitmapConverter}, ConverterParameter=100}" Width="Auto" Height="Auto" Effect="{DynamicResource Shadow.Border.Large}"/>
+                                    </Viewbox>
+
+                                    <Grid Grid.Row="1">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock x:Name="NumberLabel" Text="{Binding Number, StringFormat={}{0:0}}" Foreground="{DynamicResource Element.Foreground.Gray112}" 
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" Padding="0"/>
+
+                                        <TextBlock x:Name="DelayLabel" Grid.Column="1" Text="{Binding Delay, StringFormat={}{0:0 'ms'}}" Foreground="{DynamicResource Element.Foreground.Gray112}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" Padding="0" FontSize="11" FontWeight="Normal" FontStyle="Italic"/>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
+                
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ListView}">

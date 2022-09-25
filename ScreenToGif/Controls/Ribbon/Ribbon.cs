@@ -1,299 +1,430 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
+using ScreenToGif.Domain.Enums;
 using ScreenToGif.Util;
 
-namespace ScreenToGif.Controls.Ribbon
+namespace ScreenToGif.Controls.Ribbon;
+
+public class Ribbon : TabControl
 {
-    public enum RibbonMode
+    public enum Modes
     {
         Ribbon,
         Menu
     }
 
-    //Groups of elements, ordered
-    //Groups can be hidden by type/tags
-    public class Ribbon : TabControl
+    #region Variables
+
+    private Button _hideButton;
+    private SideScrollViewer _tabScrollViewer;
+    private StackPanel _tabPanel;
+    private Border _contentBorder;
+    private ContentPresenter _contentPresenter;
+    private ExtendedToggleButton _notificationButton;
+    private NotificationBox _notificationBox;
+    private int _accumulatedDelta = 0;
+
+    #endregion
+
+    #region Properties
+
+    public static readonly DependencyProperty ModeProperty = DependencyProperty.Register(nameof(Mode), typeof(Modes), typeof(Ribbon),
+        new FrameworkPropertyMetadata(Modes.Ribbon, FrameworkPropertyMetadataOptions.AffectsRender, Mode_Changed));
+
+    public static DependencyProperty IsDisplayingContentProperty = DependencyProperty.Register(nameof(IsDisplayingContent), typeof(bool), typeof(Ribbon), new PropertyMetadata(true));
+
+    public static DependencyProperty OptionsCommandProperty = DependencyProperty.Register(nameof(OptionsCommand), typeof(ICommand), typeof(Ribbon), new PropertyMetadata(null));
+
+    public static DependencyProperty FeedbackCommandProperty = DependencyProperty.Register(nameof(FeedbackCommand), typeof(ICommand), typeof(Ribbon), new PropertyMetadata(null));
+
+    public static DependencyProperty TroubleshootCommandProperty = DependencyProperty.Register(nameof(TroubleshootCommand), typeof(ICommand), typeof(Ribbon), new PropertyMetadata(null));
+
+    public static DependencyProperty HelpCommandProperty = DependencyProperty.Register(nameof(HelpCommand), typeof(ICommand), typeof(Ribbon), new PropertyMetadata(null));
+
+
+    public Modes Mode
     {
-        #region Variables
+        get => (Modes)GetValue(ModeProperty);
+        set => SetValue(ModeProperty, value);
+    }
 
-        private Button _hideButton;
-        private ImageMenuItem _extrasMenuItem;
-        private TabPanel _tabPanel;
-        private Border _border;
-        private ImageToggleButton _notificationButton;
-        private NotificationListControl _notificationList;
+    public bool IsDisplayingContent
+    {
+        get => (bool)GetValue(IsDisplayingContentProperty);
+        set => SetValue(IsDisplayingContentProperty, value);
+    }
 
-        #endregion
+    public ICommand OptionsCommand
+    {
+        get => (ICommand)GetValue(OptionsCommandProperty);
+        set => SetValue(OptionsCommandProperty, value);
+    }
 
-        #region Properties
+    public ICommand FeedbackCommand
+    {
+        get => (ICommand)GetValue(FeedbackCommandProperty);
+        set => SetValue(FeedbackCommandProperty, value);
+    }
 
-        public static readonly DependencyProperty ModeProperty = DependencyProperty.Register(nameof(Mode), typeof(RibbonMode), typeof(Ribbon), 
-            new FrameworkPropertyMetadata(RibbonMode.Ribbon, FrameworkPropertyMetadataOptions.AffectsRender, Mode_Changed));
-        public static readonly DependencyProperty ExtrasMenuProperty = DependencyProperty.Register(nameof(ExtrasMenu), typeof(List<FrameworkElement>), typeof(Ribbon), 
-            new PropertyMetadata(new List<FrameworkElement>()));
+    public ICommand TroubleshootCommand
+    {
+        get => (ICommand)GetValue(TroubleshootCommandProperty);
+        set => SetValue(TroubleshootCommandProperty, value);
+    }
 
-        public RibbonMode Mode
+    public ICommand HelpCommand
+    {
+        get => (ICommand)GetValue(HelpCommandProperty);
+        set => SetValue(HelpCommandProperty, value);
+    }
+
+    #endregion
+
+
+    static Ribbon()
+    {
+        DefaultStyleKeyProperty.OverrideMetadata(typeof(Ribbon), new FrameworkPropertyMetadata(typeof(Ribbon)));
+    }
+
+
+    public override void OnApplyTemplate()
+    {
+        base.OnApplyTemplate();
+
+        _tabScrollViewer = Template.FindName("TabPanelScrollViewer", this) as SideScrollViewer;
+        _tabPanel = Template.FindName("TabPanel", this) as StackPanel;
+        _contentBorder = Template.FindName("ContentBorder", this) as Border;
+        _contentPresenter = Template.FindName("ContentPresenter", this) as ContentPresenter;
+
+        _notificationButton = Template.FindName("NotificationsButton", this) as ExtendedToggleButton;
+        _notificationBox = Template.FindName("NotificationBox", this) as NotificationBox;
+        _hideButton = Template.FindName("HideGridButton", this) as Button;
+
+        //Hide button.
+        if (_hideButton != null)
+            _hideButton.Click += HideButton_Clicked;
+
+        if (_tabPanel != null)
         {
-            get => (RibbonMode)GetValue(ModeProperty);
-            set => SetValue(ModeProperty, value);
+            _tabPanel.PreviewMouseWheel += TabControl_PreviewMouseWheel;
+            _tabPanel.PreviewMouseLeftButtonDown += TabPanel_MouseLeftButtonDown;
         }
 
-        public List<FrameworkElement> ExtrasMenu
+        SelectionChanged += Ribbon_SelectionChanged;
+
+        if (_notificationButton != null)
+            _notificationButton.Checked += NotificationButton_Checked;
+
+        AnimateOrNot();
+    }
+
+    #region Events
+
+    private static void Mode_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var element = d as Ribbon;
+        element?.SwitchMode();
+    }
+
+    private void Ribbon_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (SelectedIndex < 0)
+            return;
+
+        //If the ribbon content is already being displayed.
+        if (IsDisplayingContent)
         {
-            get => (List<FrameworkElement>)GetValue(ExtrasMenuProperty);
-            set => SetValue(ExtrasMenuProperty, value);
-        }
-
-        #endregion
-
-        static Ribbon()
-        {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(Ribbon), new FrameworkPropertyMetadata(typeof(Ribbon)));
-        }
-
-        public override void OnApplyTemplate()
-        {
-            base.OnApplyTemplate();
-
-            //Change the style of the inner controls based on the mode
-
-            _tabPanel = Template.FindName("TabPanel", this) as TabPanel;
-            _border = Template.FindName("ContentBorder", this) as Border;
-
-            _notificationButton = Template.FindName("NotificationsButton", this) as ImageToggleButton;
-            _notificationList = Template.FindName("NotificationList", this) as NotificationListControl;
-            _extrasMenuItem = Template.FindName("ExtrasMenuItem", this) as ImageMenuItem;
-
-            _hideButton = Template.FindName("HideGridButton", this) as Button;
-
-            //Hide tab
-            if (_hideButton != null)
-                _hideButton.Click += HideButton_Clicked;
-
-            //Show tab (if hidden)
-            if (_tabPanel != null)
+            //Increase the size and opacity of the content border.
+            _contentPresenter.BeginAnimation(MarginProperty, new ThicknessAnimation(new Thickness(-20, 0, 0, 0), new Thickness(0, 0, 0, 0), new Duration(new TimeSpan(0, 0, 0, 1)))
             {
-                foreach (TabItem tabItem in _tabPanel.Children)
-                    tabItem.PreviewMouseDown += TabItem_PreviewMouseDown;
+                EasingFunction = new PowerEase { Power = 9 }
+            });
 
-                _tabPanel.PreviewMouseWheel += TabControl_PreviewMouseWheel;
-            }
-
-            UpdateVisual();
-            UpdateNotificationButton();
+            _contentPresenter.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, new Duration(new TimeSpan(0, 0, 0, 1)))
+            {
+                EasingFunction = new PowerEase { Power = 9 }
+            });
+            return;
         }
 
-        #region Events
+        if (_tabPanel.Children[SelectedIndex] is RibbonTab tab)
+            tab.DisplayAccent = false;
 
-        private static void Mode_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        //Increase the size and opacity of the content border.
+        _contentBorder.BeginAnimation(HeightProperty, new DoubleAnimation(_contentBorder.ActualHeight, 98, new Duration(new TimeSpan(0, 0, 0, 1)))
         {
-            var element = d as Ribbon;
-            element?.SwitchMode();
-        }
+            EasingFunction = new PowerEase { Power = 9 }
+        });
 
-        private void TabControl_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        _contentBorder.BeginAnimation(OpacityProperty, new DoubleAnimation(_contentBorder.Opacity, 1, new Duration(new TimeSpan(0, 0, 0, 1)))
         {
-            if (e.Delta > 0)
+            EasingFunction = new PowerEase { Power = 9 }
+        });
+
+        //Show the "Hide panel" button.
+        _hideButton.BeginAnimation(VisibilityProperty, new ObjectAnimationUsingKeyFrames
+        {
+            KeyFrames = { new DiscreteObjectKeyFrame(Visibility.Visible, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0.5))) }
+        });
+
+        //Decrease the size of the TabItem list.
+        _tabScrollViewer.BeginAnimation(MarginProperty, new ThicknessAnimation(_tabPanel.Margin, new Thickness(0, 0, 0, 0), new Duration(new TimeSpan(0, 0, 0, 1)))
+        {
+            EasingFunction = new PowerEase { Power = 9 }
+        });
+
+        _tabPanel.Children[SelectedIndex].BeginAnimation(RibbonTab.DisplayAccentProperty, new BooleanAnimationUsingKeyFrames
+        {
+            KeyFrames = { new DiscreteBooleanKeyFrame(true, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0.5))) }
+        });
+
+        IsDisplayingContent = true;
+    }
+
+    private void TabPanel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ClickCount > 1)
+            HidePanel();
+    }
+
+    private void TabControl_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        try
+        {
+            //Tone down the delta. TODO: Test with a mouse.
+            _accumulatedDelta += Math.Min(e.Delta, 100);
+
+            if (_accumulatedDelta > 120)
             {
-                if (SelectedIndex < Items.Count - 1)
-                    SelectedIndex++;
-                else
-                    SelectedIndex = 0;
-            }
-            else
-            {
+                #region Advances to the next tab item
 
                 if (SelectedIndex > 0)
                     SelectedIndex--;
                 else
+                    SelectedIndex = Items.OfType<TabItem>().Count(w => w.IsEnabled) - 1;
+
+                _accumulatedDelta = 0;
+
+                SkipDisabledTab();
+
+                #endregion
+            }
+            else if (_accumulatedDelta < -120)
+            {
+                #region Backs to the previous tab item
+
+                if (SelectedIndex < Items.OfType<TabItem>().Count(w => w.IsEnabled) - 1)
+                    SelectedIndex++;
+                else
+                    SelectedIndex = 0;
+
+                _accumulatedDelta = 0;
+
+                SkipDisabledTab(false);
+
+                #endregion
+            }
+        }
+        catch (Exception exception)
+        {
+            Console.WriteLine(exception);
+        }
+    }
+
+    private void HideButton_Clicked(object sender, RoutedEventArgs routedEventArgs)
+    {
+        HidePanel();
+    }
+
+    private void NotificationButton_Checked(object sender, RoutedEventArgs e)
+    {
+        if (!IsLoaded)
+            return;
+
+        if (_notificationButton.FindResource("NotificationStoryboard") is Storyboard story)
+            story.Stop();
+    }
+
+    #endregion
+
+    #region Methods
+
+    internal void SwitchMode()
+    {
+        switch (Mode)
+        {
+            case Modes.Ribbon:
+            {
+
+                break;
+            }
+            case Modes.Menu:
+            {
+
+                break;
+            }
+        }
+    }
+
+    private void HidePanel()
+    {
+        //ActualHeight = 0
+        _contentBorder.BeginAnimation(HeightProperty, new DoubleAnimation(_contentBorder.ActualHeight, 0, new Duration(new TimeSpan(0, 0, 0, 1)))
+        {
+            EasingFunction = new PowerEase { Power = 9 }
+        });
+
+        //Opacity = 0
+        _contentBorder.BeginAnimation(OpacityProperty, new DoubleAnimation(_contentBorder.Opacity, 0, new Duration(new TimeSpan(0, 0, 0, 1)))
+        {
+            EasingFunction = new PowerEase { Power = 9 }
+        });
+
+        //SelectedItem = null
+        BeginAnimation(SelectedItemProperty, new ObjectAnimationUsingKeyFrames
+        {
+            KeyFrames = { new DiscreteObjectKeyFrame(null, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0))) }
+        });
+
+        //Hide the "Hide panel" button.
+        _hideButton.BeginAnimation(VisibilityProperty, new ObjectAnimationUsingKeyFrames
+        {
+            KeyFrames = { new DiscreteObjectKeyFrame(Visibility.Collapsed, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0))) }
+        });
+
+        //Margin = 0,0,0,5
+        _tabScrollViewer.BeginAnimation(MarginProperty, new ThicknessAnimation(_tabPanel.Margin, new Thickness(0, 0, 0, 2), new Duration(new TimeSpan(0, 0, 0, 1)))
+        {
+            EasingFunction = new PowerEase { Power = 9 }
+        });
+
+        SelectedIndex = -1;
+        IsDisplayingContent = false;
+    }
+
+    /// <summary>
+    /// Checks if the tab selection is valid.
+    /// If not, it tries to selected another tab.
+    /// </summary>
+    /// <param name="next">True if the navigation should go forwards.</param>
+    private void SkipDisabledTab(bool next = true)
+    {
+        //If no tab was selected, ignore.
+        if (SelectedIndex < 0)
+            return;
+
+        //If the current tab is disabled.
+        if (!_tabPanel.Children[SelectedIndex].IsEnabled || _tabPanel.Children[SelectedIndex].Visibility != Visibility.Visible)
+        {
+            //If all tabs are disabled, remove selection.
+            if (_tabPanel.Children.OfType<TabItem>().All(x => !x.IsEnabled))
+            {
+                SelectedIndex = -1;
+                return;
+            }
+
+            if (next)
+            {
+                //Tries to go forward.
+                if (SelectedIndex > 0)
+                    SelectedIndex--;
+                else
                     SelectedIndex = Items.Count - 1;
-            }
-
-            if (!_tabPanel.Children[SelectedIndex].IsEnabled)
-            {
-                if (_tabPanel.Children.OfType<TabItem>().All(x => !x.IsEnabled))
-                {
-                    SelectedIndex = -1;
-                    return;
-                }
-
-                TabControl_PreviewMouseWheel(sender, e);
-            }
-
-            TabItem_PreviewMouseDown(sender, null);
-            ChangeVisibility();
-        }
-
-        private void TabItem_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (sender is TabItem selected)
-                selected.IsSelected = true;
-
-            if (Math.Abs(_border.ActualHeight - 100) < 0)
                 return;
-
-            var animation = new DoubleAnimation(_border.ActualHeight, 100, new Duration(new TimeSpan(0, 0, 0, 1)))
-            {
-                EasingFunction = new PowerEase { Power = 8 }
-            };
-            _border.BeginAnimation(HeightProperty, animation);
-
-            var opacityAnimation = new DoubleAnimation(_border.Opacity, 1, new Duration(new TimeSpan(0, 0, 0, 1)))
-            {
-                EasingFunction = new PowerEase { Power = 8 }
-            };
-            _border.BeginAnimation(OpacityProperty, opacityAnimation);
-
-            var visibilityAnimation = new ObjectAnimationUsingKeyFrames();
-            visibilityAnimation.KeyFrames.Add(new DiscreteObjectKeyFrame(Visibility.Visible, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0.5))));
-            _hideButton.BeginAnimation(VisibilityProperty, visibilityAnimation);
-
-            //Marging = 5,5,0,-1
-            var marginAnimation = new ThicknessAnimation(_tabPanel.Margin, new Thickness(5, 5, 0, -1), new Duration(new TimeSpan(0, 0, 0, 0, 1)))
-            {
-                EasingFunction = new PowerEase { Power = 8 }
-            };
-            _tabPanel.BeginAnimation(MarginProperty, marginAnimation);
-        }
-
-        private void HideButton_Clicked(object sender, RoutedEventArgs routedEventArgs)
-        {
-            //ActualHeight = 0
-            var animation = new DoubleAnimation(_border.ActualHeight, 0, new Duration(new TimeSpan(0, 0, 0, 1)))
-            {
-                EasingFunction = new PowerEase { Power = 8 }
-            };
-            _border.BeginAnimation(HeightProperty, animation);
-
-            //Opacity = 0
-            var opacityAnimation = new DoubleAnimation(_border.Opacity, 0, new Duration(new TimeSpan(0, 0, 0, 1)))
-            {
-                EasingFunction = new PowerEase { Power = 8 }
-            };
-            _border.BeginAnimation(OpacityProperty, opacityAnimation);
-
-            //SelectedItem = null
-            var objectAnimation = new ObjectAnimationUsingKeyFrames();
-            objectAnimation.KeyFrames.Add(new DiscreteObjectKeyFrame(null, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0))));
-            BeginAnimation(SelectedItemProperty, objectAnimation);
-
-            //Visibility = Visibility.Collapsed
-            var visibilityAnimation = new ObjectAnimationUsingKeyFrames();
-            visibilityAnimation.KeyFrames.Add(new DiscreteObjectKeyFrame(Visibility.Collapsed, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0))));
-            _hideButton.BeginAnimation(VisibilityProperty, visibilityAnimation);
-
-            //Marging = 5,5,0,5
-            var marginAnimation = new ThicknessAnimation(_tabPanel.Margin, new Thickness(5, 5, 0, 5), new Duration(new TimeSpan(0, 0, 0, 0, 1)))
-            {
-                EasingFunction = new PowerEase { Power = 8 }
-            };
-            _tabPanel.BeginAnimation(MarginProperty, marginAnimation);
-        }
-
-        #endregion
-
-        #region Methods
-
-        internal void SwitchMode()
-        {
-            switch (Mode)
-            {
-                case RibbonMode.Ribbon:
-                {
-
-                    break;
-                }
-                case RibbonMode.Menu:
-                {
-
-                    break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Changes the visibility of the Content.
-        /// </summary>
-        /// <param name="visible">True to show the Content.</param>
-        public void ChangeVisibility(bool visible = true)
-        {
-            _border.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-            _hideButton.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        public void UpdateVisual(bool isActivated = true)
-        {
-            //Shows only a white foreground when: 
-
-            //var color = Glass.GlassColor;
-            //var ness = Glass.GlassColor.GetBrightness();
-            //var aa = color.ConvertRgbToHsv();
-
-            var darkForeground = !SystemParameters.IsGlassEnabled || !Other.IsWin8OrHigher() || Glass.GlassColor.GetBrightness() > 973 || !isActivated;
-            //var darkForeground = !SystemParameters.IsGlassEnabled || !Other.IsWin8OrHigher() || aa.V > 0.5 || !isActivated;           
-            var showBackground = !Other.IsWin8OrHigher();
-
-            //Console.WriteLine("!IsGlassEnabled: " + !SystemParameters.IsGlassEnabled);
-            //Console.WriteLine("!UsesColor: " + !Glass.UsesColor);
-            //Console.WriteLine("GlassColorBrightness <= 137: " + (Glass.GlassColor.GetBrightness() <= 137));
-            //Console.WriteLine("!IsWin8: " + !Other.IsWin8OrHigher());
-            //Console.WriteLine("IsActivated: " + isActivated);
-            //Console.WriteLine("IsDark: " + isDark);
-
-            //Update each tab.
-            foreach (var tab in _tabPanel.Children.OfType<AwareTabItem>())
-            {
-                //To force the change.
-                if (tab.IsDark == !darkForeground)
-                    tab.IsDark = !tab.IsDark;
-
-                if (tab.ShowBackground == showBackground)
-                    tab.ShowBackground = !tab.ShowBackground;
-
-                tab.IsDark = !darkForeground;
-                tab.ShowBackground = showBackground;
             }
 
-            //Update the buttons.
-            if (_notificationButton != null)
-            {
-                _notificationButton.DarkMode = !darkForeground;
-                _notificationButton.IsOverNonClientArea = UserSettings.All.EditorExtendChrome;
-            }
+            //Tries to go back.
+            if (SelectedIndex < Items.Count - 1)
+                SelectedIndex++;
+            else
+                SelectedIndex = 0;
+        }
+    }
 
-            if (_extrasMenuItem != null)
-            {
-                _extrasMenuItem.DarkMode = !darkForeground;
-                _extrasMenuItem.IsOverNonClientArea = UserSettings.All.EditorExtendChrome;
-            }
+    public void UpdateNotifications(int? id = null)
+    {
+        _notificationBox?.UpdateNotification(id);
+
+        AnimateOrNot();
+    }
+
+    public EncoderListViewItem AddEncoding(int id, bool isActive = false)
+    {
+        //Display the popup (if the editor is active) and animate the button.
+        if (isActive)
+            _notificationButton.IsChecked = true;
+
+        AnimateOrNot(true);
+
+        return _notificationBox.AddEncoding(id);
+    }
+
+    public void UpdateEncoding(int? id = null, bool onlyStatus = false)
+    {
+        if (!onlyStatus)
+            _notificationBox?.UpdateEncoding(id);
+
+        AnimateOrNot();
+    }
+
+    public EncoderListViewItem RemoveEncoding(int id)
+    {
+        try
+        {
+            return _notificationBox.RemoveEncoding(id);
+        }
+        finally
+        {
+            AnimateOrNot();
+        }
+    }
+
+    private void AnimateOrNot(bool add = false)
+    {
+        var story = _notificationButton.FindResource("NotificationStoryboard") as Storyboard;
+
+        if (story != null)
+        {
+            story.Stop();
+
+            //Blink the button when an encoding is added.
+            if (add)
+                story.Begin();
         }
 
-        public void UpdateNotifications()
+        var anyProcessing = EncodingManager.Encodings.Any(s => s.Status == EncodingStatus.Processing);
+        var anyCompleted = EncodingManager.Encodings.Any(s => s.Status == EncodingStatus.Completed);
+        var anyFaulty = EncodingManager.Encodings.Any(s => s.Status == EncodingStatus.Error);
+
+        _notificationButton.Icon = anyProcessing ? FindResource("Vector.Progress") as Brush :
+            anyCompleted ? FindResource("Vector.Ok.Round") as Brush :
+            anyFaulty ? FindResource("Vector.Cancel.Round") as Brush : _notificationButton.Icon;
+        _notificationButton.IsImportant = anyProcessing;
+        _notificationButton.SetResourceReference(ExtendedToggleButton.TextProperty, anyProcessing ? "S.Encoder.Encoding" : anyCompleted ? "S.Encoder.Completed" : anyFaulty ? "S.Encoder.Error" : "S.Notifications");
+
+        if (anyProcessing || anyCompleted || anyFaulty)
+            return;
+
+        //Animate the button for notifications, when there are no encodings.
+        var most = NotificationManager.Notifications.Select(s => s.Kind).OrderByDescending(a => (int)a).FirstOrDefault();
+
+        _notificationButton.Icon = FindResource(StatusBand.KindToString(most)) as Brush;
+        _notificationButton.IsImportant = most != StatusType.None;
+        _notificationButton.SetResourceReference(ExtendedToggleButton.TextProperty, "S.Notifications");
+
+        if (story != null)
         {
-            _notificationList?.UpdateList();
-
-            UpdateNotificationButton();
-        }
-
-        public void UpdateNotificationButton()
-        {
-            if (System.ComponentModel.DesignerProperties.GetIsInDesignMode(this))
-                return;
-
-            var most = NotificationManager.Notifications.Select(s => s.Kind).OrderByDescending(a => (int)a).FirstOrDefault();
-
-            _notificationButton.Content = FindResource(StatusBand.KindToString(most)) as Canvas;
+            story.Stop();
 
             if (most != StatusType.None)
-                (_notificationButton.FindResource("NotificationStoryboard") as Storyboard)?.Begin();
+                story.Begin();
         }
-
-        #endregion
     }
+
+    #endregion
 }
