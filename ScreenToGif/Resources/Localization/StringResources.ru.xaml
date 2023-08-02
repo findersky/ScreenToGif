@@ -123,7 +123,7 @@
     <s:String x:Key="S.Command.KeyStrokes">Нажатие клавиш: вставляет клавиши, нажатые во время записи</s:String>
     <s:String x:Key="S.Command.FreeDrawing">Рисование свободных форм</s:String>
     <s:String x:Key="S.Command.Shapes">Добавить фигуры</s:String>
-    <s:String x:Key="S.Command.MouseClicks">Щелчки мыши</s:String>
+    <s:String x:Key="S.Command.MouseEvents">Щелчки мыши</s:String>
     <s:String x:Key="S.Command.Watermark">Выбрать и добавить изображение как водяной знак</s:String>
     <s:String x:Key="S.Command.Border">Добавить границы</s:String>
     <s:String x:Key="S.Command.Shadow">Добавить тень</s:String>
@@ -776,7 +776,7 @@
     <s:String x:Key="S.Preset.Autosave">Автосохранение</s:String>
     <s:String x:Key="S.Preset.Autosave.Info">Изменения в этом пресете сохраняются автоматически.</s:String>
     <s:String x:Key="S.Preset.Default.Title">По умолчанию ({0})</s:String>
-    <s:String x:Key="S.Preset.Default.Description">Пресет по умолчанию для кодеровщика.</s:String>
+    <s:String x:Key="S.Preset.Default.Description">Пресет по умолчанию для кодировщика.</s:String>
     <s:String x:Key="S.Preset.Twitter.Title">Для Twitter ({0})</s:String>
     <s:String x:Key="S.Preset.Twitter.Description">Соблюдает ограничения Twitter (кроме размера и разрешения).</s:String>
     <s:String x:Key="S.Preset.Hevc.Title">HEVC ({0})</s:String>
@@ -1253,7 +1253,7 @@
     <s:String x:Key="S.Resize.Difference">Разница</s:String>
     <s:String x:Key="S.Resize.Dpi">DPI</s:String>
     <s:String x:Key="S.Resize.Options">Настройки</s:String>
-    <s:String x:Key="S.Resize.Pixels">Пмксели (px)</s:String>
+    <s:String x:Key="S.Resize.Pixels">Пиксели (px)</s:String>
     <s:String x:Key="S.Resize.Percent">Проценты (%)</s:String>
     <s:String x:Key="S.Resize.Dpi2">DPI:</s:String>
     <s:String x:Key="S.Resize.KeepAspect">Сохранить пропорции.</s:String>
