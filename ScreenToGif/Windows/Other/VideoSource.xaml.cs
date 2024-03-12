@@ -1,3 +1,4 @@
+using ScreenToGif.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,7 +17,7 @@ using ScreenToGif.Util.Settings;
 
 namespace ScreenToGif.Windows.Other;
 
-public partial class VideoSource : Window
+public partial class VideoSource
 {
     #region Variables
 
@@ -817,11 +818,12 @@ public partial class VideoSource : Window
 
             var info = new ProcessStartInfo(UserSettings.All.FfmpegLocation)
             {
-                Arguments = $" -i \"{VideoPath}\" -vsync 2 -progress pipe:1 -vf scale={VideoWidth}:{VideoHeight} -ss {start:hh\\:mm\\:ss\\.fff} -to {end:hh\\:mm\\:ss\\.fff} -hide_banner -c:v png -r {fps} -vframes {count} \"{path}\"",
+                Arguments = $" -i \"{VideoPath}\" -progress pipe:1 -vf scale={VideoWidth}:{VideoHeight} -ss {start:hh\\:mm\\:ss\\.fff} -to {end:hh\\:mm\\:ss\\.fff} -hide_banner -c:v png -r {fps} -vframes {count} \"{path}\"",
                 CreateNoWindow = true,
                 ErrorDialog = false,
                 UseShellExecute = false,
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             };
 
             _process = new Process();
@@ -844,18 +846,21 @@ public partial class VideoSource : Window
                         break;
                 }
             };
-
-            _process.ErrorDataReceived += (sender, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
-                    throw new Exception("Error while capturing frames with FFmpeg.") { HelpLink = $"Command:\n\r{info.Arguments}\n\rResult:\n\r{e.Data}" };
-            };
-
+            
             _process.StartInfo = info;
             _process.Start();
             _process.BeginOutputReadLine();
-
+            
             await _process.WaitForExitAsync();
+
+            if (_process == null)
+                return;
+
+            var error = await _process?.StandardError?.ReadToEndAsync();
+
+            if (!string.IsNullOrWhiteSpace(error))
+                throw new Exception("Error while capturing frames with FFmpeg.") { HelpLink = $"Command:\n\r{info.Arguments}\n\rResult:\n\r{error}" };
+
         }
         catch (Exception e)
         {

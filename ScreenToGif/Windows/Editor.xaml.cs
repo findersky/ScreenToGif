@@ -53,10 +53,11 @@ using ScreenToGif.Util.Settings;
 using ScreenToGif.ViewModel.ExportPresets;
 using ScreenToGif.ViewModel.ExportPresets.Image;
 using ScreenToGif.ViewModel.ExportPresets.Other;
+using System.Collections.Immutable;
 
 namespace ScreenToGif.Windows
 {
-    public partial class Editor : Window, INotification, IEncoding
+    public partial class Editor : INotification, IEncoding
     {
         #region Properties
 
@@ -333,7 +334,8 @@ namespace ScreenToGif.Windows
 
             ZoomBoxControl.RefreshImage();
 
-            Cancel_Executed(sender, null);
+            if (e.OriginalSource is not Image)
+                Cancel_Executed(sender, null);
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
@@ -1388,6 +1390,7 @@ namespace ScreenToGif.Windows
         {
             Pause();
 
+            FrameListView.UnselectAll();
             FrameListView.SelectAll();
 
             ShowHint("S.Hint.SelectAll");
@@ -3256,7 +3259,7 @@ namespace ScreenToGif.Windows
 
         internal async void LoadFromArguments()
         {
-            if (!Arguments.FileNames.Any())
+            if (Arguments.FileNames.Count < 1)
                 return;
 
             #region Validation
@@ -3284,7 +3287,7 @@ namespace ScreenToGif.Windows
 
             #endregion
 
-            await Task.Run(() => ImportFrom(Arguments.FileNames));
+            await Task.Run(() => ImportFrom(Arguments.FileNames.ToImmutableList()));
 
             ClosePanel(removeEvent: true);
             CommandManager.InvalidateRequerySuggested();
@@ -3873,7 +3876,7 @@ namespace ScreenToGif.Windows
             return listFrames;
         }
 
-        private bool ImportFrom(List<string> fileList)
+        private bool ImportFrom(IList<string> fileList)
         {
             #region Disable UI
 
@@ -4082,7 +4085,8 @@ namespace ScreenToGif.Windows
                     {
                         var ser = new DataContractJsonSerializer(typeof(ProjectInfo));
                         var project = ser.ReadObject(ms) as ProjectInfo;
-                        list = project.Frames;
+
+                        list = project?.Frames;
                     }
                 }
                 else

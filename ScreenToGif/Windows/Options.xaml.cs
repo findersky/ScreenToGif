@@ -33,7 +33,7 @@ using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
 
 namespace ScreenToGif.Windows;
 
-public partial class Options : Window, INotification
+public partial class Options : INotification
 {
     #region Constants and variables
 
@@ -1681,7 +1681,7 @@ public partial class Options : Window, INotification
             {
                 #region FFmpeg
 
-                if (Util.Other.IsFfmpegPresent(true, true))
+                if (Util.Other.IsFfmpegPresent(true, false))
                 {
                     var info = new FileInfo(Util.Other.AdjustPath(UserSettings.All.FfmpegLocation));
                     info.Refresh();
@@ -1702,7 +1702,7 @@ public partial class Options : Window, INotification
             {
                 #region Gifski
 
-                if (Util.Other.IsGifskiPresent(true, true))
+                if (Util.Other.IsGifskiPresent(true, false))
                 {
                     var info = new FileInfo(Util.Other.AdjustPath(UserSettings.All.GifskiLocation));
                     info.Refresh();
@@ -1786,17 +1786,17 @@ public partial class Options : Window, INotification
         }
     }
 
-    private void FlattrButton_Click(object sender, RoutedEventArgs e)
+    private void StripeButton_Click(object sender, RoutedEventArgs e)
     {
         try
         {
-            ProcessHelper.StartWithShell("https://flattr.com/@NickeManarin/domain/screentogif.com");
+            ProcessHelper.StartWithShell("https://donate.stripe.com/cN23dfaz9dJW1wc000");
         }
         catch (Exception ex)
         {
-            LogWriter.Log(ex, "Error • Opening the Flattr website");
+            LogWriter.Log(ex, "Error • Opening the Stripe website");
 
-            ErrorDialog.Ok(LocalizationHelper.Get("S.Options.Title"), "Error opening the Flattr website", ex.Message, ex);
+            ErrorDialog.Ok(LocalizationHelper.Get("S.Options.Title"), "Error opening the Stripe website", ex.Message, ex);
         }
     }
 

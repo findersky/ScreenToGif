@@ -1,20 +1,20 @@
-<Window x:Class="ScreenToGif.Windows.Editor" 
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:cm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-        xmlns:n="clr-namespace:ScreenToGif.Controls"
-        xmlns:l="clr-namespace:ScreenToGif.Windows"
-        xmlns:c="clr-namespace:ScreenToGif.Util.Converters;assembly=ScreenToGif.Util"
-        xmlns:gl="clr-namespace:System.Globalization;assembly=mscorlib"
-        xmlns:h="clr-namespace:ScreenToGif.Controls.Shapes" 
-        xmlns:t="clr-namespace:ScreenToGif.Util.Settings;assembly=ScreenToGif.Util"
-        xmlns:o="clr-namespace:ScreenToGif.UserControls"
-        xmlns:e="clr-namespace:ScreenToGif.Domain.Enums;assembly=ScreenToGif.Domain"
-        x:Name="EditorWindow" Title="{DynamicResource S.Editor.Title}" MinHeight="500" MinWidth="700" 
-        Background="{DynamicResource Panel.Background.Level3}" UseLayoutRounding="True" Icon="/Resources/Logo.ico"
-        FocusManager.FocusedElement="{Binding RelativeSource={x:Static RelativeSource.Self}, Mode=OneTime}"
-        Loaded="Window_Loaded" Closing="Window_Closing" Activated="Window_Activated" KeyUp="Window_KeyUp" 
-        DpiChanged="Window_DpiChanged" Deactivated="Window_Deactivated">
+<n:ExWindow x:Class="ScreenToGif.Windows.Editor" 
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:cm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+            xmlns:n="clr-namespace:ScreenToGif.Controls"
+            xmlns:l="clr-namespace:ScreenToGif.Windows"
+            xmlns:c="clr-namespace:ScreenToGif.Util.Converters;assembly=ScreenToGif.Util"
+            xmlns:gl="clr-namespace:System.Globalization;assembly=mscorlib"
+            xmlns:h="clr-namespace:ScreenToGif.Controls.Shapes" 
+            xmlns:t="clr-namespace:ScreenToGif.Util.Settings;assembly=ScreenToGif.Util"
+            xmlns:o="clr-namespace:ScreenToGif.UserControls"
+            xmlns:e="clr-namespace:ScreenToGif.Domain.Enums;assembly=ScreenToGif.Domain"
+            x:Name="EditorWindow" Title="{DynamicResource S.Editor.Title}" MinHeight="500" MinWidth="700"
+            Background="{DynamicResource Panel.Background.Level3}" UseLayoutRounding="True" Icon="/Resources/Logo.ico"
+            FocusManager.FocusedElement="{Binding RelativeSource={x:Static RelativeSource.Self}, Mode=OneTime}"
+            Loaded="Window_Loaded" Closing="Window_Closing" Activated="Window_Activated" KeyUp="Window_KeyUp" 
+            DpiChanged="Window_DpiChanged" Deactivated="Window_Deactivated">
 
     <Window.Resources>
         <c:DoubleToInt x:Key="DoubleToIntConverter"/>
@@ -1435,7 +1435,8 @@
                                    FontStyle="{Binding ElementName=FreeTextFontStyleComboBox, Path=SelectedValue}"
                                    FontWeight="{Binding ElementName=FreeTextFontWeightComboBox, Path=SelectedValue}"
                                    FontSize="{Binding ElementName=FreeTextFontSizeNumericUpDown, Path=Value}"
-                                   Foreground="{Binding ElementName=FreeTextFontColorBox, Path=SelectedBrush}">
+                                   Foreground="{Binding ElementName=FreeTextFontColorBox, Path=SelectedBrush}"
+                                   Background="{Binding ElementName=FreeTextBackgroundColorBox, Path=SelectedBrush}">
                             <TextBlock.Resources>
                                 <c:DoubleToBool x:Key="DoubleToBool"/>
                                 <DropShadowEffect x:Key="DropShadowEffect" 
@@ -2119,6 +2120,7 @@
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -2193,8 +2195,12 @@
                                     <n:ColorBox Grid.Row="4" Grid.Column="1" x:Name="FreeTextFontColorBox" Margin="10,5"
                                                 SelectedColor="{Binding FreeTextFontColor, Source={x:Static t:UserSettings.All}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="{DynamicResource S.Caption.TextDecoration}" VerticalAlignment="Center" Foreground="{DynamicResource Element.Foreground.Medium}"/>
-                                    <ComboBox Grid.Row="5" Grid.Column="1" x:Name="FreeTextTextDecorationComboBox" Margin="10,5" MinWidth="100"
+                                    <TextBlock Grid.Row="5" Grid.Column="0" Text="{DynamicResource S.Caption.BackgroundColor}" VerticalAlignment="Center" Foreground="{DynamicResource Element.Foreground.Medium}"/>
+                                    <n:ColorBox Grid.Row="5" Grid.Column="1" x:Name="FreeTextBackgroundColorBox" Margin="10,5"
+                                                SelectedColor="{Binding FreeTextBackgroundColor, Source={x:Static t:UserSettings.All}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                    <TextBlock Grid.Row="6" Grid.Column="0" Text="{DynamicResource S.Caption.TextDecoration}" VerticalAlignment="Center" Foreground="{DynamicResource Element.Foreground.Medium}"/>
+                                    <ComboBox Grid.Row="6" Grid.Column="1" x:Name="FreeTextTextDecorationComboBox" Margin="10,5" MinWidth="100"
                                               SelectedValuePath="Tag" SelectedValue="{Binding Source={x:Static t:UserSettings.All}, Path=FreeTextTextDecoration, Mode=TwoWay}">
                                         <ComboBox.ItemTemplate>
                                             <DataTemplate>
@@ -4416,4 +4422,4 @@
             </Grid>
         </Border>
     </Grid>
-</Window>
+</n:ExWindow>
